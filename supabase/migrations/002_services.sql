@@ -1,6 +1,17 @@
 -- ============================================================
 -- Migración 002: services + client_services + solicitudes
+-- Autocontenida: incluye función set_updated_at por si
+-- la migración 001 no fue ejecutada antes.
 -- ============================================================
+
+-- Función reutilizable para updated_at (idempotente)
+create or replace function public.set_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
 
 -- Catálogo de servicios de Axendora
 create table if not exists public.services (
@@ -65,19 +76,22 @@ create policy "solicitudes_insert_own"
   on public.solicitudes for insert
   with check (auth.uid() = client_id);
 
--- Triggers updated_at (reutiliza la función de migración 001)
-create trigger client_services_updated_at
+-- Triggers updated_at
+create or replace trigger client_services_updated_at
   before update on public.client_services
   for each row execute procedure public.set_updated_at();
 
-create trigger solicitudes_updated_at
+create or replace trigger solicitudes_updated_at
   before update on public.solicitudes
   for each row execute procedure public.set_updated_at();
 
--- Seed: catálogo inicial de servicios
-insert into public.services (nombre, descripcion, icono) values
+-- Seed: catálogo inicial de servicios (solo si está vacío)
+insert into public.services (nombre, descripcion, icono)
+select * from (values
   ('Gestión de Redes Sociales', 'Administración estratégica de tus redes con contenido constante y alineado con tu marca.', 'Share2'),
   ('Campañas en Meta', 'Creación y activación de campañas en Facebook, Instagram y WhatsApp.', 'TrendingUp'),
   ('Diseño Gráfico', 'Identidad visual profesional: piezas para redes, banners y branding.', 'Paintbrush'),
   ('Páginas Web Profesionales', 'Diseño y desarrollo de sitios web modernos y optimizados.', 'Globe'),
-  ('Pautas en Redes Sociales', 'Inversión publicitaria inteligente para maximizar tu alcance.', 'BarChart3');
+  ('Pautas en Redes Sociales', 'Inversión publicitaria inteligente para maximizar tu alcance.', 'BarChart3')
+) as v(nombre, descripcion, icono)
+where not exists (select 1 from public.services limit 1);
