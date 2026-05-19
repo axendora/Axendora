@@ -3,14 +3,41 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { LogOut, X, type LucideIcon } from 'lucide-react'
+import {
+  LogOut,
+  X,
+  LayoutDashboard,
+  Users,
+  MessageSquare,
+  Package,
+  BarChart2,
+  User,
+  type LucideIcon,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
+
+export type NavIcon =
+  | 'dashboard'
+  | 'users'
+  | 'package'
+  | 'message-square'
+  | 'bar-chart'
+  | 'user'
+
+const ICON_MAP: Record<NavIcon, LucideIcon> = {
+  'dashboard': LayoutDashboard,
+  'users': Users,
+  'package': Package,
+  'message-square': MessageSquare,
+  'bar-chart': BarChart2,
+  'user': User,
+}
 
 export interface NavLink {
   href: string
   label: string
-  icon: LucideIcon
+  icon: NavIcon
   exact: boolean
 }
 
@@ -74,23 +101,26 @@ export function Sidebar({ nombre, email, open, onClose, navLinks, rootHref }: Si
 
         <nav className="flex-1 overflow-y-auto px-3 py-4">
           <ul className="space-y-1">
-            {navLinks.map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  onClick={onClose}
-                  className={cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                    isActive(link)
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-                  )}
-                >
-                  <link.icon size={18} />
-                  {link.label}
-                </Link>
-              </li>
-            ))}
+            {navLinks.map((link) => {
+              const Icon = ICON_MAP[link.icon]
+              return (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    onClick={onClose}
+                    className={cn(
+                      'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                      isActive(link)
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                    )}
+                  >
+                    <Icon size={18} />
+                    {link.label}
+                  </Link>
+                </li>
+              )
+            })}
           </ul>
         </nav>
 
