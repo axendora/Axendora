@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(pnpm --version)",
+      "Bash(mv CLAUDE.md CLAUDE.md.tmp)",
+      "Bash(mv public-temp *)",
+      "Bash(mkdir -p /tmp/axendora-backup)",
+      "Bash(mv \"C:\\\\Users\\\\kirito\\\\Documents\\\\Axendora\\\\web-crm-axendora\\\\CLAUDE.md.tmp\" /tmp/axendora-backup/)",
+      "Bash(mv \"C:\\\\Users\\\\kirito\\\\Documents\\\\Axendora\\\\web-crm-axendora\\\\public-temp.tmp\" /tmp/axendora-backup/)",
+      "Read(//tmp/**)",
+      "Bash(pnpm install *)",
+      "Bash(node -e \"const p=require\\('./node_modules/next/package.json'\\); console.log\\('Next.js:', p.version\\)\")",
+      "Bash(cp \"/tmp/axendora-backup/public-temp.tmp/logo letras blancas.png\" \"C:\\\\Users\\\\kirito\\\\Documents\\\\Axendora\\\\web-crm-axendora\\\\public/logo_letras_blancas.png\")",
+      "Bash(mv /tmp/axendora-backup/CLAUDE.md.tmp \"C:\\\\Users\\\\kirito\\\\Documents\\\\Axendora\\\\web-crm-axendora\\\\CLAUDE.md\")",
+      "Bash(rm -rf /tmp/axendora-backup)",
+      "Bash(pnpm dlx *)",
+      "Bash(pnpm dev *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "Bash(pnpm exec *)"
+    ]
+  }
+}
