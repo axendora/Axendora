@@ -8,9 +8,9 @@ import { COUNTRY_CODES, COUNTRIES } from '@/lib/countries'
 import { editarClienteAction } from '../actions'
 
 const INPUT =
-  'w-full rounded-lg border border-border bg-surface-elevated py-2 px-3 text-sm transition-colors focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/20'
+  'w-full rounded-lg border border-border bg-background py-2 px-3 text-sm transition-colors focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/20'
 const SELECT =
-  'rounded-lg border border-border bg-surface-elevated py-2 px-3 text-sm focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/20'
+  'rounded-lg border border-border bg-background py-2 px-3 text-sm focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/20'
 
 export interface ClienteEditable {
   user_id: string

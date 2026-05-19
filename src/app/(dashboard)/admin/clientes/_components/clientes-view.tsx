@@ -4,12 +4,13 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
-  LayoutGrid, List, Phone, MessageCircle, ChevronRight,
+  LayoutGrid, List, Phone, ChevronRight,
   Building2, MapPin, Pencil, Trash2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
 import { waLink } from '@/lib/countries'
+import { WhatsAppIcon } from '@/components/icons/whatsapp-icon'
 import { EditClienteModal, type ClienteEditable } from './edit-cliente-modal'
 import { DeleteClienteModal } from './delete-cliente-modal'
 
@@ -51,7 +52,7 @@ function ContactBtns({ cliente }: { cliente: ClienteRow }) {
           onClick={(e) => e.stopPropagation()}
           className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#25D366]/40 bg-[#25D366]/10 text-[#25D366] transition-colors hover:bg-[#25D366]/25"
         >
-          <MessageCircle size={14} />
+          <WhatsAppIcon size={14} />
         </a>
       )}
       {cliente.telefono && (

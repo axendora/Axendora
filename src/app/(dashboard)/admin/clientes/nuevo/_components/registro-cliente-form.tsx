@@ -5,8 +5,9 @@ import { useFormStatus } from 'react-dom'
 import Link from 'next/link'
 import {
   User, Mail, Lock, Phone, Building2, Globe, MapPin, FileText,
-  CheckCircle2, ArrowLeft, UserPlus, Copy, Check, ExternalLink, MessageCircle,
+  CheckCircle2, ArrowLeft, UserPlus, Copy, Check, ExternalLink,
 } from 'lucide-react'
+import { WhatsAppIcon } from '@/components/icons/whatsapp-icon'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
 import { COUNTRY_CODES, COUNTRIES, waLink } from '@/lib/countries'
@@ -79,7 +80,7 @@ function SuccessCard({ cliente }: { cliente: Extract<RegistrarClienteResult, { o
   const infoFields = [
     { label: 'Email',        value: cliente.email,    icon: Mail },
     { label: 'Teléfono',     value: cliente.telefono, icon: Phone },
-    { label: 'WhatsApp',     value: cliente.whatsapp, icon: MessageCircle },
+    { label: 'WhatsApp',     value: cliente.whatsapp, icon: WhatsAppIcon },
     { label: 'Empresa',      value: cliente.empresa,  icon: Building2 },
     { label: 'Sector',       value: cliente.sector,   icon: FileText },
     { label: 'Sitio web',    value: cliente.website,  icon: Globe },
@@ -113,7 +114,7 @@ function SuccessCard({ cliente }: { cliente: Extract<RegistrarClienteResult, { o
             {cliente.whatsapp && (
               <a href={waLink(cliente.whatsapp)} target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-1.5 rounded-lg border border-[#25D366]/40 bg-[#25D366]/10 px-2.5 py-1.5 text-xs text-[#25D366] hover:bg-[#25D366]/20 transition-colors">
-                <MessageCircle size={12} /> WhatsApp
+                <WhatsAppIcon size={12} /> WhatsApp
               </a>
             )}
             {cliente.telefono && (
@@ -227,7 +228,7 @@ export function RegistroClienteForm() {
             {/* WhatsApp */}
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-muted-foreground">
-                <MessageCircle size={12} className="mr-1 inline text-[#25D366]" />
+                <WhatsAppIcon size={12} />
                 WhatsApp
               </label>
               <div className="flex gap-2">
