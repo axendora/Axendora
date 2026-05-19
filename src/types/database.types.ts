@@ -20,6 +20,7 @@ export type Database = {
           website: string | null
           ciudad: string | null
           pais: string | null
+          whatsapp: string | null
           notas_internas: string | null
           created_at: string
           updated_at: string
@@ -31,6 +32,7 @@ export type Database = {
           email: string
           role?: Role
           telefono?: string | null
+          whatsapp?: string | null
           empresa?: string | null
           sector?: string | null
           website?: string | null
@@ -45,6 +47,7 @@ export type Database = {
           email?: string
           role?: Role
           telefono?: string | null
+          whatsapp?: string | null
           empresa?: string | null
           sector?: string | null
           website?: string | null

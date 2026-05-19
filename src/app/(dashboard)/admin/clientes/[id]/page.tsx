@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Mail, Calendar, Phone, Building2, Globe, MapPin } from 'lucide-react'
+import { ArrowLeft, Mail, Calendar, Phone, Building2, Globe, MapPin, MessageCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { waLink } from '@/lib/countries'
 import type { ServiceEstado, SolicitudEstado, SolicitudTipo, SolicitudPrioridad } from '@/types/database.types'
 import { AssignServiceForm } from './_components/assign-service-form'
 import { updateClientServiceEstadoAction } from './actions'
@@ -119,6 +120,32 @@ export default async function ClienteDetailPage({
               </div>
             </div>
           </div>
+          {/* Action buttons */}
+          {(profile.whatsapp || profile.telefono) && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {profile.whatsapp && (
+                <a
+                  href={waLink(profile.whatsapp)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-[#25D366]/40 bg-[#25D366]/10 px-3 py-1.5 text-xs font-medium text-[#25D366] transition-colors hover:bg-[#25D366]/20"
+                >
+                  <MessageCircle size={13} />
+                  WhatsApp · {profile.whatsapp}
+                </a>
+              )}
+              {profile.telefono && (
+                <a
+                  href={`tel:${profile.telefono}`}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+                >
+                  <Phone size={13} />
+                  Llamar · {profile.telefono}
+                </a>
+              )}
+            </div>
+          )}
+
           {profile.notas_internas && (
             <div className="mt-4 rounded-xl border border-border bg-muted/30 px-4 py-3 text-xs text-muted-foreground">
               <span className="font-medium text-foreground">Notas internas:</span> {profile.notas_internas}
