@@ -1,0 +1,230 @@
+import { createServiceClient } from '@/lib/supabase/server'
+import { notFound } from 'next/navigation'
+import Link from 'next/link'
+import { ArrowLeft, Mail, Calendar } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import type { ServiceEstado, SolicitudEstado, SolicitudTipo, SolicitudPrioridad } from '@/types/database.types'
+import { AssignServiceForm } from './_components/assign-service-form'
+import { updateClientServiceEstadoAction } from './actions'
+import { buttonVariants } from '@/components/ui/button'
+
+type ClientServiceRow = {
+  id: string
+  estado: ServiceEstado
+  fecha_inicio: string | null
+  notas: string | null
+  services: { nombre: string; descripcion: string | null } | null
+}
+
+const serviceEstadoConfig: Record<ServiceEstado, { label: string; className: string }> = {
+  en_configuracion: { label: 'En configuración', className: 'bg-primary/10 text-primary' },
+  activo:           { label: 'Activo',            className: 'bg-success/10 text-success' },
+  pausado:          { label: 'Pausado',           className: 'bg-warning/10 text-warning' },
+  finalizado:       { label: 'Finalizado',        className: 'bg-muted text-muted-foreground' },
+}
+
+const solicitudEstadoConfig: Record<SolicitudEstado, { label: string; className: string }> = {
+  abierta:    { label: 'Abierta',    className: 'bg-primary/10 text-primary' },
+  en_proceso: { label: 'En proceso', className: 'bg-warning/10 text-warning' },
+  resuelta:   { label: 'Resuelta',   className: 'bg-success/10 text-success' },
+  cerrada:    { label: 'Cerrada',    className: 'bg-muted text-muted-foreground' },
+}
+
+const tipoLabel: Record<SolicitudTipo, string> = {
+  soporte: 'Soporte', consulta: 'Consulta', cambio: 'Cambio', otro: 'Otro',
+}
+
+const prioridadConfig: Record<SolicitudPrioridad, { label: string; className: string }> = {
+  baja:  { label: 'Baja',  className: 'text-muted-foreground' },
+  media: { label: 'Media', className: 'text-warning' },
+  alta:  { label: 'Alta',  className: 'text-error' },
+}
+
+const serviceEstadoOptions: { value: ServiceEstado; label: string }[] = [
+  { value: 'en_configuracion', label: 'En configuración' },
+  { value: 'activo',           label: 'Activo' },
+  { value: 'pausado',          label: 'Pausado' },
+  { value: 'finalizado',       label: 'Finalizado' },
+]
+
+function formatDate(iso: string) {
+  return new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', year: 'numeric' }).format(
+    new Date(iso),
+  )
+}
+
+export default async function ClienteDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id: userId } = await params
+  const supabase = await createServiceClient()
+
+  const [
+    { data: profile },
+    { data: clientServicesRaw },
+    { data: solicitudes },
+    { data: availableServices },
+  ] = await Promise.all([
+    supabase.from('profiles').select('*').eq('user_id', userId).single(),
+    supabase
+      .from('client_services')
+      .select('id, estado, fecha_inicio, notas, services(nombre, descripcion)')
+      .eq('client_id', userId)
+      .order('created_at', { ascending: false })
+      .returns<ClientServiceRow[]>(),
+    supabase
+      .from('solicitudes')
+      .select('id, titulo, tipo, estado, prioridad, created_at')
+      .eq('client_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(10),
+    supabase.from('services').select('id, nombre').eq('activo', true),
+  ])
+
+  if (!profile) notFound()
+
+  return (
+    <div className="space-y-8">
+      {/* Back + header */}
+      <div className="flex items-start gap-4">
+        <Link
+          href="/admin/clientes"
+          className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'mt-0.5 shrink-0 gap-1.5')}
+        >
+          <ArrowLeft size={15} />
+          Volver
+        </Link>
+        <div>
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/20 text-base font-semibold text-primary">
+              {profile.nombre.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <h1 className="font-serif text-xl font-semibold sm:text-2xl">{profile.nombre}</h1>
+              <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Mail size={11} />
+                {profile.email}
+                <span className="mx-1">·</span>
+                <Calendar size={11} />
+                Desde {formatDate(profile.created_at)}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Servicios contratados */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold">Servicios contratados</h2>
+          <AssignServiceForm clientId={userId} availableServices={availableServices ?? []} />
+        </div>
+
+        {!clientServicesRaw?.length ? (
+          <div className="rounded-xl border border-border bg-card py-10 text-center">
+            <p className="text-sm text-muted-foreground">Sin servicios asignados.</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {clientServicesRaw.map((cs) => {
+              const estadoCfg = serviceEstadoConfig[cs.estado]
+              return (
+                <div
+                  key={cs.id}
+                  className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium">{cs.services?.nombre ?? '—'}</p>
+                    {cs.fecha_inicio && (
+                      <p className="text-xs text-muted-foreground">
+                        Inicio: {formatDate(cs.fecha_inicio)}
+                      </p>
+                    )}
+                    {cs.notas && (
+                      <p className="mt-1 text-xs text-muted-foreground">{cs.notas}</p>
+                    )}
+                  </div>
+
+                  <form action={updateClientServiceEstadoAction} className="flex shrink-0 items-center gap-2">
+                    <input type="hidden" name="id" value={cs.id} />
+                    <input type="hidden" name="clientId" value={userId} />
+                    <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-medium', estadoCfg.className)}>
+                      {estadoCfg.label}
+                    </span>
+                    <select
+                      name="estado"
+                      defaultValue={cs.estado}
+                      className="rounded-lg border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    >
+                      {serviceEstadoOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="submit"
+                      className={cn(buttonVariants({ size: 'sm', variant: 'outline' }), 'h-7 px-2 text-xs')}
+                    >
+                      Guardar
+                    </button>
+                  </form>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Solicitudes */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold">Solicitudes</h2>
+          <Link
+            href={`/admin/solicitudes?cliente=${userId}`}
+            className="text-xs text-primary hover:underline"
+          >
+            Ver todas
+          </Link>
+        </div>
+
+        {!solicitudes?.length ? (
+          <div className="rounded-xl border border-border bg-card py-10 text-center">
+            <p className="text-sm text-muted-foreground">Sin solicitudes registradas.</p>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-border bg-card divide-y divide-border">
+            {solicitudes.map((s) => {
+              const estado = solicitudEstadoConfig[s.estado as SolicitudEstado]
+              const prioridad = prioridadConfig[s.prioridad as SolicitudPrioridad]
+              return (
+                <Link
+                  key={s.id}
+                  href={`/admin/solicitudes/${s.id}`}
+                  className="flex flex-col gap-1.5 px-5 py-3.5 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{s.titulo}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {tipoLabel[s.tipo as SolicitudTipo]} · {formatDate(s.created_at)}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <span className={cn('text-xs font-medium', prioridad.className)}>
+                      {prioridad.label}
+                    </span>
+                    <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-medium', estado.className)}>
+                      {estado.label}
+                    </span>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

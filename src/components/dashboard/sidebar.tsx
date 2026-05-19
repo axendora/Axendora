@@ -3,25 +3,27 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Package, MessageSquare, User, LogOut, X } from 'lucide-react'
+import { LogOut, X, type LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 
-const navLinks = [
-  { href: '/cliente', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-  { href: '/cliente/servicios', label: 'Mis Servicios', icon: Package, exact: false },
-  { href: '/cliente/solicitudes', label: 'Solicitudes', icon: MessageSquare, exact: false },
-  { href: '/cliente/perfil', label: 'Mi Perfil', icon: User, exact: false },
-]
+export interface NavLink {
+  href: string
+  label: string
+  icon: LucideIcon
+  exact: boolean
+}
 
 interface SidebarProps {
   nombre: string
   email: string
   open: boolean
   onClose: () => void
+  navLinks: NavLink[]
+  rootHref: string
 }
 
-export function Sidebar({ nombre, email, open, onClose }: SidebarProps) {
+export function Sidebar({ nombre, email, open, onClose, navLinks, rootHref }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
 
@@ -31,13 +33,12 @@ export function Sidebar({ nombre, email, open, onClose }: SidebarProps) {
     router.push('/')
   }
 
-  function isActive(link: (typeof navLinks)[number]) {
+  function isActive(link: NavLink) {
     return link.exact ? pathname === link.href : pathname.startsWith(link.href)
   }
 
   return (
     <>
-      {/* Overlay móvil */}
       {open && (
         <div
           className="fixed inset-0 z-30 bg-black/60 lg:hidden"
@@ -46,16 +47,14 @@ export function Sidebar({ nombre, email, open, onClose }: SidebarProps) {
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={cn(
           'fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-border bg-card transition-transform duration-200 lg:static lg:translate-x-0',
           open ? 'translate-x-0' : '-translate-x-full',
         )}
       >
-        {/* Logo + close btn móvil */}
         <div className="flex h-16 items-center justify-between border-b border-border px-5">
-          <Link href="/cliente">
+          <Link href={rootHref}>
             <Image
               src="/logo_letras_blancas.png"
               alt="Axendora"
@@ -73,7 +72,6 @@ export function Sidebar({ nombre, email, open, onClose }: SidebarProps) {
           </button>
         </div>
 
-        {/* Nav */}
         <nav className="flex-1 overflow-y-auto px-3 py-4">
           <ul className="space-y-1">
             {navLinks.map((link) => (
@@ -96,7 +94,6 @@ export function Sidebar({ nombre, email, open, onClose }: SidebarProps) {
           </ul>
         </nav>
 
-        {/* Usuario + logout */}
         <div className="border-t border-border p-4">
           <div className="mb-3 flex items-center gap-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/20 text-sm font-semibold text-primary">
