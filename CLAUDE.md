@@ -200,5 +200,80 @@ Las skills viven en `.claude/skills/`. Leerlas cuando aplique al contexto de la 
 - [ ] **Fase 8:** Optimización + dominio en producción
 
 ---
+---
 
+## 🚀 Reglas de Commit y Push (Git Workflow)
+
+### Identidad del committer (este repo)
+Antes del primer commit en cada sesión, verifica y configura si es necesario:
+
+\`\`\`bash
+git config user.name "Jeramine Rojas"
+git config user.email "axendora@gmail.com"
+\`\`\`
+
+> Importante: usa configuración **local del repo** (sin `--global`) porque 
+> el usuario tiene múltiples cuentas de GitHub.
+
+### Cuándo hacer push automático (sin preguntar)
+Ejecuta `git add . && git commit && git push origin main` automáticamente cuando:
+
+1. Termines una **fase completa** del plan de trabajo
+2. Completes una **funcionalidad** que deja el código en estado funcional y desplegable
+3. Apliques un **fix** importante que el usuario debería ver en producción
+4. Hagas **cambios visuales** que el usuario quiere validar en Vercel
+
+### Formato de commits (Conventional Commits)
+
+\`\`\`
+feat(faseX):      nueva funcionalidad
+fix(scope):       corrección de bug
+style(scope):     cambios visuales / CSS / colores
+refactor(scope):  reorganización sin cambiar funcionalidad
+docs(scope):      documentación
+chore(scope):     configuración, deps, mantenimiento
+\`\`\`
+
+**Ejemplos válidos:**
+- \`feat(fase4): implementar autenticación con Supabase\`
+- \`feat(panel-cliente): agregar dashboard de estadísticas\`
+- \`fix(login): corregir redirect después de auth\`
+- \`style(landing): ajustar hero al turquesa #14A8B6 del logo\`
+
+### Checklist ANTES de cada push
+
+1. ✅ \`.env.local\` NO está en el commit (verificar con \`git status\`)
+2. ✅ No hay \`console.log\` de debug innecesarios
+3. ✅ El proyecto compila sin errores de TypeScript
+4. ✅ El mensaje del commit sigue Conventional Commits
+
+### Flujo exacto a ejecutar
+
+\`\`\`bash
+git status                              # mostrar cambios al usuario
+git add .
+git commit -m "<tipo>(<scope>): <descripción clara>"
+git push origin main
+\`\`\`
+
+Después del push, confirmar:
+- Hash del commit
+- Que Vercel desplegará automáticamente en ~2 minutos
+- URL de Vercel donde se podrá ver el cambio
+
+### Si el push falla
+- **Conflicto:** \`git pull --rebase origin main\` y reintenta
+- **Credenciales:** avisar al usuario para que actualice token
+- **Pre-commit hooks fallan:** mostrar el error y arreglar antes de reintentar
+
+### Estado actual del proyecto
+- ✅ Fase 1: Setup
+- ✅ Fase 2: Diseño base  
+- ✅ Fase 3: Landing pública
+- 🔄 Fase 4: Auth + DB (en curso)
+- ⏳ Fase 5: Panel Cliente
+- ⏳ Fase 6: Panel Admin
+- ⏳ Fase 7: Reportes + Storage
+- ⏳ Fase 8: Deploy final + dominio
+- 
 _Última actualización: mayo 2026 — Inicio del proyecto._
