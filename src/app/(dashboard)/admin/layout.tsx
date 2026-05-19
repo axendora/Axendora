@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { DashboardShell } from '@/components/dashboard/shell'
-import { LayoutDashboard, Users, MessageSquare, Package } from 'lucide-react'
+import { LayoutDashboard, Users, MessageSquare, Package, BarChart2 } from 'lucide-react'
 import type { NavLink } from '@/components/dashboard/sidebar'
 
 const adminNavLinks: NavLink[] = [
@@ -9,6 +9,7 @@ const adminNavLinks: NavLink[] = [
   { href: '/admin/clientes', label: 'Clientes', icon: Users, exact: false },
   { href: '/admin/solicitudes', label: 'Solicitudes', icon: MessageSquare, exact: false },
   { href: '/admin/servicios', label: 'Catálogo', icon: Package, exact: false },
+  { href: '/admin/reportes', label: 'Reportes', icon: BarChart2, exact: false },
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
