@@ -1,6 +1,6 @@
 'use server'
 
-import { createServiceClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
@@ -11,7 +11,7 @@ export async function createServicioAction(formData: FormData) {
 
   if (!nombre) throw new Error('El nombre es obligatorio')
 
-  const supabase = await createServiceClient()
+  const supabase = await createClient()
   const { error } = await supabase.from('services').insert({ nombre, descripcion, icono })
   if (error) throw new Error(error.message)
 
@@ -28,7 +28,7 @@ export async function updateServicioAction(formData: FormData) {
 
   if (!nombre) throw new Error('El nombre es obligatorio')
 
-  const supabase = await createServiceClient()
+  const supabase = await createClient()
   const { error } = await supabase
     .from('services')
     .update({ nombre, descripcion, icono, activo })
@@ -44,7 +44,7 @@ export async function toggleServicioAction(formData: FormData) {
   const id = formData.get('id') as string
   const activo = formData.get('activo') === 'true'
 
-  const supabase = await createServiceClient()
+  const supabase = await createClient()
   const { error } = await supabase
     .from('services')
     .update({ activo: !activo })

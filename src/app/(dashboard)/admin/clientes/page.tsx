@@ -1,4 +1,4 @@
-import { createServiceClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Users, ChevronRight } from 'lucide-react'
 
@@ -9,7 +9,7 @@ function formatDate(iso: string) {
 }
 
 export default async function AdminClientesPage() {
-  const supabase = await createServiceClient()
+  const supabase = await createClient()
 
   const { data: clientes } = await supabase
     .from('profiles')

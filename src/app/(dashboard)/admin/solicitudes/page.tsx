@@ -1,4 +1,4 @@
-import { createServiceClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { MessageSquare } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -41,7 +41,7 @@ export default async function AdminSolicitudesPage({
   searchParams: Promise<{ estado?: string; cliente?: string }>
 }) {
   const { estado: estadoFilter, cliente: clienteFilter } = await searchParams
-  const supabase = await createServiceClient()
+  const supabase = await createClient()
 
   let query = supabase
     .from('solicitudes')

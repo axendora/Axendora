@@ -1,4 +1,4 @@
-import { createServiceClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Users, Package, MessageSquare, Clock, CheckCircle, ArrowRight } from 'lucide-react'
@@ -27,12 +27,7 @@ function formatDate(iso: string) {
 }
 
 export default async function AdminDashboardPage() {
-  const supabase = await createServiceClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) redirect('/login')
+  const supabase = await createClient()
 
   const [
     { count: totalClientes },

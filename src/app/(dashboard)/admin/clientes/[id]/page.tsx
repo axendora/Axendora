@@ -1,4 +1,4 @@
-import { createServiceClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Mail, Calendar } from 'lucide-react'
@@ -59,7 +59,7 @@ export default async function ClienteDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id: userId } = await params
-  const supabase = await createServiceClient()
+  const supabase = await createClient()
 
   const [
     { data: profile },

@@ -1,4 +1,4 @@
-import { createServiceClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
@@ -13,7 +13,7 @@ export default async function EditarServicioPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const supabase = await createServiceClient()
+  const supabase = await createClient()
 
   const { data: servicio } = await supabase
     .from('services')

@@ -1,4 +1,4 @@
-import { createServiceClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Package, Plus, Pencil } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 import { toggleServicioAction } from './actions'
 
 export default async function AdminServiciosPage() {
-  const supabase = await createServiceClient()
+  const supabase = await createClient()
 
   const { data: servicios } = await supabase
     .from('services')

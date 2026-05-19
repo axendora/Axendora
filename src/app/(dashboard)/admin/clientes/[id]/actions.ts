@@ -1,6 +1,6 @@
 'use server'
 
-import { createServiceClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { ServiceEstado } from '@/types/database.types'
 
@@ -9,7 +9,7 @@ export async function assignServiceAction(clientId: string, data: {
   fecha_inicio?: string
   notas?: string
 }) {
-  const supabase = await createServiceClient()
+  const supabase = await createClient()
   const { error } = await supabase.from('client_services').insert({
     client_id: clientId,
     service_id: data.service_id,
@@ -25,7 +25,7 @@ export async function updateClientServiceEstadoAction(formData: FormData) {
   const clientId = formData.get('clientId') as string
   const estado = formData.get('estado') as ServiceEstado
 
-  const supabase = await createServiceClient()
+  const supabase = await createClient()
   const { error } = await supabase
     .from('client_services')
     .update({ estado })
