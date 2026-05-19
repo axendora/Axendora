@@ -14,6 +14,13 @@ export type Database = {
           nombre: string
           email: string
           role: Role
+          telefono: string | null
+          empresa: string | null
+          sector: string | null
+          website: string | null
+          ciudad: string | null
+          pais: string | null
+          notas_internas: string | null
           created_at: string
           updated_at: string
         }
@@ -23,6 +30,13 @@ export type Database = {
           nombre: string
           email: string
           role?: Role
+          telefono?: string | null
+          empresa?: string | null
+          sector?: string | null
+          website?: string | null
+          ciudad?: string | null
+          pais?: string | null
+          notas_internas?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -30,6 +44,13 @@ export type Database = {
           nombre?: string
           email?: string
           role?: Role
+          telefono?: string | null
+          empresa?: string | null
+          sector?: string | null
+          website?: string | null
+          ciudad?: string | null
+          pais?: string | null
+          notas_internas?: string | null
           updated_at?: string
         }
         Relationships: []

@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Mail, Calendar } from 'lucide-react'
+import { ArrowLeft, Mail, Calendar, Phone, Building2, Globe, MapPin } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ServiceEstado, SolicitudEstado, SolicitudTipo, SolicitudPrioridad } from '@/types/database.types'
 import { AssignServiceForm } from './_components/assign-service-form'
@@ -96,22 +96,34 @@ export default async function ClienteDetailPage({
           <ArrowLeft size={15} />
           Volver
         </Link>
-        <div>
+        <div className="min-w-0">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/20 text-base font-semibold text-primary">
               {profile.nombre.charAt(0).toUpperCase()}
             </div>
-            <div>
+            <div className="min-w-0">
               <h1 className="font-serif text-xl font-semibold sm:text-2xl">{profile.nombre}</h1>
-              <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Mail size={11} />
-                {profile.email}
-                <span className="mx-1">·</span>
-                <Calendar size={11} />
-                Desde {formatDate(profile.created_at)}
+              {profile.empresa && (
+                <p className="text-sm text-muted-foreground">{profile.empresa}</p>
+              )}
+              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1"><Mail size={11} />{profile.email}</span>
+                {profile.telefono && <span className="flex items-center gap-1"><Phone size={11} />{profile.telefono}</span>}
+                {profile.ciudad && <span className="flex items-center gap-1"><MapPin size={11} />{profile.ciudad}{profile.pais ? `, ${profile.pais}` : ''}</span>}
+                {profile.website && (
+                  <a href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline">
+                    <Globe size={11} />{profile.website}
+                  </a>
+                )}
+                <span className="flex items-center gap-1"><Calendar size={11} />Desde {formatDate(profile.created_at)}</span>
               </div>
             </div>
           </div>
+          {profile.notas_internas && (
+            <div className="mt-4 rounded-xl border border-border bg-muted/30 px-4 py-3 text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">Notas internas:</span> {profile.notas_internas}
+            </div>
+          )}
         </div>
       </div>
 
