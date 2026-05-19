@@ -64,6 +64,8 @@ export type Database = {
           nombre: string
           descripcion: string | null
           icono: string | null
+          imagen_url: string | null
+          duracion_dias: number | null
           activo: boolean
           created_at: string
         }
@@ -72,6 +74,8 @@ export type Database = {
           nombre: string
           descripcion?: string | null
           icono?: string | null
+          imagen_url?: string | null
+          duracion_dias?: number | null
           activo?: boolean
           created_at?: string
         }
@@ -79,6 +83,8 @@ export type Database = {
           nombre?: string
           descripcion?: string | null
           icono?: string | null
+          imagen_url?: string | null
+          duracion_dias?: number | null
           activo?: boolean
         }
         Relationships: []

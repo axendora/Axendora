@@ -44,11 +44,13 @@ export default async function EditarServicioPage({
         <ServicioForm
           action={updateServicioAction}
           defaultValues={{
-            id: servicio.id,
-            nombre: servicio.nombre,
-            descripcion: servicio.descripcion ?? '',
-            icono: servicio.icono ?? '',
-            activo: servicio.activo,
+            id:           servicio.id,
+            nombre:       servicio.nombre,
+            descripcion:  servicio.descripcion ?? '',
+            icono:        servicio.icono ?? '',
+            activo:       servicio.activo,
+            imagen_url:   servicio.imagen_url ?? null,
+            duracion_dias: servicio.duracion_dias ?? null,
           }}
           submitLabel="Guardar cambios"
         />

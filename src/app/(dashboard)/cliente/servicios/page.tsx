@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Package } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { CountdownTimer } from '@/components/dashboard/countdown-timer'
 import type { ServiceEstado } from '@/types/database.types'
 
 type ClientServiceRow = {
@@ -12,7 +13,7 @@ type ClientServiceRow = {
   fecha_inicio: string | null
   fecha_fin: string | null
   notas: string | null
-  services: { nombre: string; descripcion: string | null } | null
+  services: { nombre: string; descripcion: string | null; imagen_url: string | null } | null
 }
 
 const estadoConfig: Record<ServiceEstado, { label: string; className: string }> = {
@@ -24,20 +25,19 @@ const estadoConfig: Record<ServiceEstado, { label: string; className: string }> 
 
 function formatDate(date: string | null) {
   if (!date) return '—'
-  return new Intl.DateTimeFormat('es', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(date))
+  return new Intl.DateTimeFormat('es', {
+    day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  }).format(new Date(date))
 }
 
 export default async function ServiciosPage() {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
   const { data: servicios } = await supabase
     .from('client_services')
-    .select('id, estado, fecha_inicio, fecha_fin, notas, services(nombre, descripcion)')
+    .select('id, estado, fecha_inicio, fecha_fin, notas, services(nombre, descripcion, imagen_url)')
     .eq('client_id', user.id)
     .order('created_at', { ascending: false })
     .returns<ClientServiceRow[]>()
@@ -58,10 +58,8 @@ export default async function ServiciosPage() {
           <p className="mt-1 max-w-xs text-sm text-muted-foreground">
             Contáctanos para comenzar con el servicio que mejor se adapte a tu negocio.
           </p>
-          <Link
-            href="/#contacto"
-            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'mt-6')}
-          >
+          <Link href="/#contacto"
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'mt-6')}>
             Contactar a Axendora
           </Link>
         </div>
@@ -70,43 +68,69 @@ export default async function ServiciosPage() {
           {servicios.map((s) => {
             const estado = estadoConfig[s.estado as ServiceEstado]
             const service = s.services
+            const isActive = s.estado === 'activo'
             return (
-              <div
-                key={s.id}
-                className="flex flex-col rounded-xl border border-border bg-card p-5"
-              >
-                <div className="mb-4 flex items-start justify-between gap-2">
-                  <div className="rounded-lg bg-primary/10 p-2.5">
-                    <Package size={18} className="text-primary" />
-                  </div>
-                  <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-medium', estado.className)}>
-                    {estado.label}
-                  </span>
-                </div>
-
-                <h3 className="text-sm font-semibold">{service?.nombre ?? '—'}</h3>
-                {service?.descripcion && (
-                  <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-                    {service.descripcion}
-                  </p>
-                )}
-
-                <div className="mt-4 space-y-1 border-t border-border pt-4">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">Inicio</span>
-                    <span>{formatDate(s.fecha_inicio)}</span>
-                  </div>
-                  {s.fecha_fin && (
-                    <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">Fin</span>
-                      <span>{formatDate(s.fecha_fin)}</span>
+              <div key={s.id}
+                className={cn(
+                  'flex flex-col overflow-hidden rounded-2xl border bg-card transition-colors',
+                  isActive ? 'border-primary/30' : 'border-border',
+                )}>
+                {/* Service image */}
+                <div className="aspect-square w-full overflow-hidden bg-muted/30">
+                  {service?.imagen_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={service.imagen_url} alt={service.nombre ?? ''}
+                      className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <Package size={48} className="text-muted-foreground/20" />
                     </div>
                   )}
                 </div>
 
-                {s.notas && (
-                  <p className="mt-3 text-xs text-muted-foreground italic">{s.notas}</p>
-                )}
+                {/* Info */}
+                <div className="flex flex-1 flex-col p-5">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-semibold leading-tight">{service?.nombre ?? '—'}</h3>
+                    <span className={cn('shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium', estado.className)}>
+                      {estado.label}
+                    </span>
+                  </div>
+
+                  {service?.descripcion && (
+                    <p className="mt-1.5 line-clamp-2 text-xs text-muted-foreground">
+                      {service.descripcion}
+                    </p>
+                  )}
+
+                  {/* Countdown — prominent when active */}
+                  {s.fecha_fin && s.estado !== 'finalizado' && (
+                    <div className="mt-3 rounded-lg border border-border bg-muted/20 px-3 py-2.5">
+                      <p className="mb-1 text-xs text-muted-foreground">Tiempo restante</p>
+                      <CountdownTimer fechaFin={s.fecha_fin} className="text-sm font-bold" />
+                    </div>
+                  )}
+
+                  {/* Dates */}
+                  <div className="mt-4 space-y-1 border-t border-border pt-4 text-xs text-muted-foreground">
+                    {s.fecha_inicio && (
+                      <div className="flex justify-between">
+                        <span>Inicio</span>
+                        <span className="text-right">{formatDate(s.fecha_inicio)}</span>
+                      </div>
+                    )}
+                    {s.fecha_fin && (
+                      <div className="flex justify-between">
+                        <span>Vencimiento</span>
+                        <span className="text-right">{formatDate(s.fecha_fin)}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {s.notas && (
+                    <p className="mt-3 text-xs text-muted-foreground italic">{s.notas}</p>
+                  )}
+                </div>
               </div>
             )
           })}
