@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Layers, Plus, Pencil, Star } from 'lucide-react'
+import { Layers, Plus, Pencil, Star, AlertTriangle } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { togglePlanAction, toggleDestacadoAction } from './actions'
@@ -10,11 +10,36 @@ import { PLAN_CATEGORIAS, formatUSD, formatCOP, tipoPrecioLabel } from '@/lib/pl
 export default async function AdminPlanesPage() {
   const supabase = await createClient()
 
-  const { data: planes } = await supabase
+  const { data: planes, error: planesError } = await supabase
     .from('plans')
     .select('id, nombre, descripcion, categoria, precio_usd, precio_cop, tipo_precio, imagen_url, icono, destacado, activo, created_at')
     .order('destacado', { ascending: false })
     .order('created_at', { ascending: false })
+
+  if (planesError) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="font-serif text-2xl font-semibold">Planes</h1>
+        </div>
+        <div className="rounded-xl border border-warning/40 bg-warning/5 p-6">
+          <div className="flex items-start gap-3">
+            <AlertTriangle size={20} className="mt-0.5 shrink-0 text-warning" />
+            <div className="space-y-2">
+              <p className="font-medium text-warning">Migración pendiente</p>
+              <p className="text-sm text-muted-foreground">
+                La tabla <code className="rounded bg-muted px-1.5 py-0.5 text-xs">public.plans</code> no existe todavía.
+                Necesitas ejecutar la migración <code className="rounded bg-muted px-1.5 py-0.5 text-xs">009_plans.sql</code> en el SQL Editor de Supabase.
+              </p>
+              <p className="text-xs text-muted-foreground/80 font-mono">
+                Detalle: {planesError.message}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

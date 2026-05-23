@@ -1,27 +1,45 @@
 import { createClient } from '@/lib/supabase/server'
-import { Layers } from 'lucide-react'
+import { Layers, AlertTriangle } from 'lucide-react'
 import { PLAN_CATEGORIAS } from '@/lib/plans'
 import { PlanCard } from './_components/plan-card'
 
 export default async function ClientePlanesPage() {
   const supabase = await createClient()
 
-  const planesQuery = supabase
+  const { data: planes, error: planesError } = await supabase
     .from('plans')
     .select('id, nombre, descripcion, categoria, precio_usd, precio_cop, tipo_precio, imagen_url, icono, destacado, activo')
     .eq('activo', true)
     .order('destacado', { ascending: false })
     .order('created_at', { ascending: false })
 
-  // RPC tipada manualmente (la función no está en database.types.ts)
-  const waPromise = (supabase as unknown as {
-    rpc: (fn: string) => Promise<{ data: string | null; error: unknown }>
-  }).rpc('get_admin_whatsapp')
+  // RPC opcional: si la función no existe, degradar sin WhatsApp
+  let whatsapp: string | null = null
+  try {
+    const wa = await (supabase as unknown as {
+      rpc: (fn: string) => Promise<{ data: string | null; error: unknown }>
+    }).rpc('get_admin_whatsapp')
+    whatsapp = wa.data ?? null
+  } catch {
+    whatsapp = null
+  }
 
-  const [{ data: planes }, { data: whatsapp }] = await Promise.all([
-    planesQuery,
-    waPromise,
-  ])
+  if (planesError) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="font-serif text-2xl font-semibold">Planes disponibles</h1>
+        </div>
+        <div className="flex flex-col items-center justify-center rounded-xl border border-warning/30 bg-warning/5 px-6 py-12 text-center">
+          <AlertTriangle size={32} className="mb-3 text-warning" />
+          <p className="text-sm font-medium">Sección en preparación</p>
+          <p className="mt-2 max-w-md text-xs text-muted-foreground">
+            La tabla de planes todavía no está disponible. El equipo está terminando la configuración.
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-8">

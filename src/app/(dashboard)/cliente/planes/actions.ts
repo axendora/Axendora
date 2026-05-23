@@ -23,7 +23,8 @@ export async function solicitarPlanAction(
     .eq('id', plan_id)
     .single()
 
-  if (planErr || !plan) return { error: 'Plan no encontrado' }
+  if (planErr) return { error: `Error al buscar el plan: ${planErr.message}` }
+  if (!plan)   return { error: 'Plan no encontrado' }
 
   const tipoLabel = plan.tipo_precio === 'mensual' ? 'recurrente mensual' : 'pago único'
 
