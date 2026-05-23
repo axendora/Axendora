@@ -1,13 +1,20 @@
 'use server'
 
-import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 export type ServiceActionState = { error: string } | null
 
 async function uploadServiceImage(file: File, path: string): Promise<string> {
-  const supabase = await createServiceClient()
+  // Uses @supabase/supabase-js directly (no cookie session) so the service role
+  // key actually bypasses RLS instead of being overridden by the user's JWT.
+  const supabase = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } },
+  )
   const { error } = await supabase.storage
     .from('service-images')
     .upload(path, file, { contentType: file.type, upsert: true })
