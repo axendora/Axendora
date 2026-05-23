@@ -4,13 +4,14 @@ import { Package, Plus, Pencil, Clock } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { toggleServicioAction } from './actions'
+import { getServiceIcon } from '@/lib/service-icons'
 
 export default async function AdminServiciosPage() {
   const supabase = await createClient()
 
   const { data: servicios } = await supabase
     .from('services')
-    .select('id, nombre, descripcion, imagen_url, duracion_dias, activo, created_at')
+    .select('id, nombre, descripcion, icono, imagen_url, duracion_dias, activo, created_at')
     .order('created_at', { ascending: false })
 
   return (
@@ -38,7 +39,9 @@ export default async function AdminServiciosPage() {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {servicios.map((servicio) => (
+          {servicios.map((servicio) => {
+            const ServiceIcon = getServiceIcon(servicio.icono)
+            return (
             <div key={servicio.id} className="flex flex-col overflow-hidden rounded-xl border border-border bg-card">
               {/* Image */}
               <div className="aspect-square w-full overflow-hidden bg-muted/30">
@@ -59,7 +62,12 @@ export default async function AdminServiciosPage() {
               {/* Info */}
               <div className="flex flex-1 flex-col p-4">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="font-medium leading-tight">{servicio.nombre}</p>
+                  <div className="flex min-w-0 items-start gap-2">
+                    {ServiceIcon && (
+                      <ServiceIcon size={16} className="mt-0.5 shrink-0 text-primary" />
+                    )}
+                    <p className="font-medium leading-tight">{servicio.nombre}</p>
+                  </div>
                   <span className={cn(
                     'shrink-0 rounded-full px-2 py-0.5 text-xs font-medium',
                     servicio.activo ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground',
@@ -97,7 +105,8 @@ export default async function AdminServiciosPage() {
                 </div>
               </div>
             </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>

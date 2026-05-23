@@ -2,43 +2,15 @@
 
 import { useActionState, useState, useRef } from 'react'
 import { useFormStatus } from 'react-dom'
-import {
-  ImageIcon, X,
-  Share2, TrendingUp, Paintbrush, Globe, BarChart3,
-  Megaphone, Camera, Video, Users, Target, Zap,
-  Search, Mail, Smartphone, Monitor, Lightbulb, Rocket,
-  Heart, Star, Package,
-} from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import { ImageIcon, X, Loader2 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import { SERVICE_ICONS } from '@/lib/service-icons'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { ServiceActionState } from '../../actions'
 
 const INPUT =
   'w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30'
-
-const SERVICE_ICONS: { name: string; Icon: LucideIcon; label: string }[] = [
-  { name: 'share-2',      Icon: Share2,      label: 'Redes Sociales' },
-  { name: 'trending-up',  Icon: TrendingUp,  label: 'Campañas' },
-  { name: 'paintbrush',   Icon: Paintbrush,  label: 'Diseño' },
-  { name: 'globe',        Icon: Globe,       label: 'Web' },
-  { name: 'bar-chart-3',  Icon: BarChart3,   label: 'Analíticas' },
-  { name: 'megaphone',    Icon: Megaphone,   label: 'Marketing' },
-  { name: 'camera',       Icon: Camera,      label: 'Foto' },
-  { name: 'video',        Icon: Video,       label: 'Video' },
-  { name: 'users',        Icon: Users,       label: 'Comunidad' },
-  { name: 'target',       Icon: Target,      label: 'Objetivo' },
-  { name: 'zap',          Icon: Zap,         label: 'Impulso' },
-  { name: 'search',       Icon: Search,      label: 'SEO' },
-  { name: 'mail',         Icon: Mail,        label: 'Email' },
-  { name: 'smartphone',   Icon: Smartphone,  label: 'Mobile' },
-  { name: 'monitor',      Icon: Monitor,     label: 'Desktop' },
-  { name: 'lightbulb',    Icon: Lightbulb,   label: 'Estrategia' },
-  { name: 'rocket',       Icon: Rocket,      label: 'Lanzamiento' },
-  { name: 'heart',        Icon: Heart,       label: 'Branding' },
-  { name: 'star',         Icon: Star,        label: 'Premium' },
-  { name: 'package',      Icon: Package,     label: 'Producto' },
-]
 
 interface ServicioFormProps {
   action: (prevState: ServiceActionState, formData: FormData) => Promise<ServiceActionState>
@@ -54,39 +26,64 @@ interface ServicioFormProps {
   submitLabel?: string
 }
 
-function SubmitButton({ label }: { label: string }) {
+function SubmitButton({ label, blocked }: { label: string; blocked: boolean }) {
   const { pending } = useFormStatus()
+  const disabled = pending || blocked
   return (
-    <button type="submit" disabled={pending} className={cn(buttonVariants(), 'gap-2')}>
+    <button type="submit" disabled={disabled} className={cn(buttonVariants(), 'gap-2')}>
       {pending ? 'Guardando...' : label}
     </button>
   )
 }
 
 export function ServicioForm({ action, defaultValues = {}, submitLabel = 'Crear servicio' }: ServicioFormProps) {
-  const [state, formAction]  = useActionState(action, null)
-  const [preview, setPreview]         = useState<string | null>(defaultValues.imagen_url ?? null)
-  const [imageRemoved, setImageRemoved] = useState(false)
+  const [state, formAction] = useActionState(action, null)
+  const [imageUrl, setImageUrl]       = useState<string | null>(defaultValues.imagen_url ?? null)
+  const [uploading, setUploading]     = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const [selectedIcon, setSelectedIcon] = useState(defaultValues.icono ?? '')
   const fileRef = useRef<HTMLInputElement>(null)
+  const supabase = createClient()
 
-  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    setImageRemoved(false)
-    setPreview(URL.createObjectURL(file))
+
+    setUploadError(null)
+    setUploading(true)
+
+    try {
+      const ext  = file.name.split('.').pop() ?? 'jpg'
+      const path = `${crypto.randomUUID()}.${ext}`
+
+      const { error } = await supabase.storage
+        .from('service-images')
+        .upload(path, file, { contentType: file.type, upsert: true })
+
+      if (error) throw new Error(error.message)
+
+      const { data } = supabase.storage.from('service-images').getPublicUrl(path)
+      setImageUrl(data.publicUrl)
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Error al subir imagen')
+      setImageUrl(null)
+      if (fileRef.current) fileRef.current.value = ''
+    } finally {
+      setUploading(false)
+    }
   }
 
   function removeImage() {
-    setPreview(null)
-    setImageRemoved(true)
+    setImageUrl(null)
+    setUploadError(null)
     if (fileRef.current) fileRef.current.value = ''
   }
 
   return (
-    <form action={formAction} className="space-y-5" encType="multipart/form-data">
+    <form action={formAction} className="space-y-5">
       {defaultValues.id && <input type="hidden" name="id" value={defaultValues.id} />}
-      {imageRemoved && <input type="hidden" name="imagen_removed" value="1" />}
+      <input type="hidden" name="imagen_url" value={imageUrl ?? ''} />
+      <input type="hidden" name="icono"      value={selectedIcon} />
 
       {state?.error && (
         <div className="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">
@@ -101,18 +98,25 @@ export function ServicioForm({ action, defaultValues = {}, submitLabel = 'Crear 
           <span className="ml-1.5 text-xs text-muted-foreground">(1080×1080 recomendado)</span>
         </label>
 
-        {preview ? (
+        {uploadError && (
+          <div className="rounded-lg border border-error/30 bg-error/10 px-3 py-2 text-xs text-error">
+            {uploadError}
+          </div>
+        )}
+
+        {imageUrl ? (
           <div className="relative w-full max-w-xs">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={preview}
+              src={imageUrl}
               alt="Preview"
               className="aspect-square w-full rounded-xl object-cover border border-border"
             />
             <button
               type="button"
               onClick={removeImage}
-              className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80"
+              disabled={uploading}
+              className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80 disabled:opacity-50"
             >
               <X size={14} />
             </button>
@@ -122,6 +126,11 @@ export function ServicioForm({ action, defaultValues = {}, submitLabel = 'Crear 
             >
               Cambiar
             </label>
+          </div>
+        ) : uploading ? (
+          <div className="flex aspect-square w-full max-w-xs flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary/40 bg-primary/5">
+            <Loader2 className="animate-spin text-primary" size={28} />
+            <span className="text-xs text-muted-foreground">Subiendo imagen...</span>
           </div>
         ) : (
           <label
@@ -135,11 +144,11 @@ export function ServicioForm({ action, defaultValues = {}, submitLabel = 'Crear 
 
         <input
           id="imagen"
-          name="imagen"
           type="file"
           accept="image/jpeg,image/png,image/webp"
           ref={fileRef}
-          onChange={handleImageChange}
+          onChange={handleFileChange}
+          disabled={uploading}
           className="hidden"
         />
       </div>
@@ -191,30 +200,27 @@ export function ServicioForm({ action, defaultValues = {}, submitLabel = 'Crear 
         />
       </div>
 
-      {/* ── Ícono ──────────────────────────────────────────── */}
+      {/* ── Ícono (minimalista, solo iconos) ───────────────── */}
       <div className="space-y-2">
         <label className="text-sm font-medium">
-          Ícono del servicio
+          Ícono
           <span className="ml-1.5 text-xs text-muted-foreground">(opcional)</span>
         </label>
 
-        <input type="hidden" name="icono" value={selectedIcon} />
-
-        <div className="grid grid-cols-5 gap-1.5 sm:grid-cols-7 lg:grid-cols-10">
-          {/* Sin ícono */}
+        <div className="flex flex-wrap gap-1.5">
           <button
             type="button"
             onClick={() => setSelectedIcon('')}
             title="Sin ícono"
+            aria-label="Sin ícono"
             className={cn(
-              'flex flex-col items-center justify-center gap-1 rounded-lg border p-2 transition-colors',
+              'flex h-10 w-10 items-center justify-center rounded-lg border transition-all',
               selectedIcon === ''
                 ? 'border-primary bg-primary/10 text-primary'
-                : 'border-border bg-muted/20 text-muted-foreground hover:border-primary/30 hover:bg-primary/5',
+                : 'border-border bg-muted/10 text-muted-foreground hover:border-primary/30 hover:text-foreground',
             )}
           >
             <X size={16} />
-            <span className="text-[10px] leading-tight">Ninguno</span>
           </button>
 
           {SERVICE_ICONS.map(({ name, Icon, label }) => (
@@ -223,25 +229,18 @@ export function ServicioForm({ action, defaultValues = {}, submitLabel = 'Crear 
               type="button"
               onClick={() => setSelectedIcon(name)}
               title={label}
+              aria-label={label}
               className={cn(
-                'flex flex-col items-center justify-center gap-1 rounded-lg border p-2 transition-colors',
+                'flex h-10 w-10 items-center justify-center rounded-lg border transition-all',
                 selectedIcon === name
                   ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-border bg-muted/20 text-muted-foreground hover:border-primary/30 hover:bg-primary/5',
+                  : 'border-border bg-muted/10 text-muted-foreground hover:border-primary/30 hover:text-foreground',
               )}
             >
               <Icon size={16} />
-              <span className="text-[10px] leading-tight">{label}</span>
             </button>
           ))}
         </div>
-
-        {selectedIcon && (
-          <p className="text-xs text-muted-foreground">
-            Seleccionado:{' '}
-            <code className="rounded bg-muted px-1 py-0.5 text-primary">{selectedIcon}</code>
-          </p>
-        )}
       </div>
 
       {/* ── Estado (solo edición) ──────────────────────────── */}
@@ -273,7 +272,7 @@ export function ServicioForm({ action, defaultValues = {}, submitLabel = 'Crear 
         </div>
       )}
 
-      <SubmitButton label={submitLabel} />
+      <SubmitButton label={submitLabel} blocked={uploading} />
     </form>
   )
 }
