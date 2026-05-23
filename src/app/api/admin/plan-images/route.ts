@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { uploadImageToBucket } from '@/lib/storage'
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
@@ -23,23 +23,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No se envió archivo' }, { status: 400 })
   }
 
-  const admin = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  )
-
-  const ext  = file.name.split('.').pop() ?? 'jpg'
-  const path = `${crypto.randomUUID()}.${ext}`
-
-  const { error } = await admin.storage
-    .from('plan-images')
-    .upload(path, file, { contentType: file.type, upsert: true })
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  try {
+    const url = await uploadImageToBucket(file, 'plan-images')
+    return NextResponse.json({ url })
+  } catch (e) {
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : 'Error desconocido' },
+      { status: 500 },
+    )
   }
-
-  const { data } = admin.storage.from('plan-images').getPublicUrl(path)
-  return NextResponse.json({ url: data.publicUrl })
 }
