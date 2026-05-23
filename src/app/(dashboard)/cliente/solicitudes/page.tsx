@@ -17,6 +17,7 @@ const tipoLabel: Record<SolicitudTipo, string> = {
   soporte:  'Soporte',
   consulta: 'Consulta',
   cambio:   'Cambio',
+  plan:     'Plan',
   otro:     'Otro',
 }
 

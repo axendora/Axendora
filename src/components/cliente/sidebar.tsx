@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard,
   Package,
+  Layers,
   Megaphone,
   BarChart2,
   FileText,
@@ -23,7 +24,8 @@ const NAV_GROUPS = [
   {
     label: 'Principal',
     items: [
-      { href: '/cliente',          label: 'Inicio',        icon: LayoutDashboard, exact: true  },
+      { href: '/cliente',           label: 'Inicio',        icon: LayoutDashboard, exact: true  },
+      { href: '/cliente/planes',    label: 'Planes',        icon: Layers,          exact: false },
       { href: '/cliente/servicios', label: 'Mis servicios', icon: Package,         exact: false },
     ],
   },

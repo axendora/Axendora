@@ -35,7 +35,7 @@ const solicitudEstadoConfig: Record<SolicitudEstado, { label: string; className:
 }
 
 const tipoLabel: Record<SolicitudTipo, string> = {
-  soporte: 'Soporte', consulta: 'Consulta', cambio: 'Cambio', otro: 'Otro',
+  soporte: 'Soporte', consulta: 'Consulta', cambio: 'Cambio', plan: 'Plan', otro: 'Otro',
 }
 
 const prioridadConfig: Record<SolicitudPrioridad, { label: string; className: string }> = {

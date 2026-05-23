@@ -1,8 +1,10 @@
 export type Role = 'client' | 'admin'
 export type ServiceEstado = 'en_configuracion' | 'activo' | 'pausado' | 'finalizado'
 export type SolicitudEstado = 'abierta' | 'en_proceso' | 'resuelta' | 'cerrada'
-export type SolicitudTipo = 'soporte' | 'consulta' | 'cambio' | 'otro'
+export type SolicitudTipo = 'soporte' | 'consulta' | 'cambio' | 'plan' | 'otro'
 export type SolicitudPrioridad = 'baja' | 'media' | 'alta'
+export type PlanCategoria = 'marketing' | 'diseno' | 'web'
+export type TipoPrecio = 'mensual' | 'unico'
 
 export type Database = {
   public: {
@@ -130,6 +132,7 @@ export type Database = {
           tipo: SolicitudTipo
           estado: SolicitudEstado
           prioridad: SolicitudPrioridad
+          plan_id: string | null
           created_at: string
           updated_at: string
         }
@@ -141,6 +144,7 @@ export type Database = {
           tipo: SolicitudTipo
           estado?: SolicitudEstado
           prioridad?: SolicitudPrioridad
+          plan_id?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -150,6 +154,53 @@ export type Database = {
           tipo?: SolicitudTipo
           estado?: SolicitudEstado
           prioridad?: SolicitudPrioridad
+          plan_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      plans: {
+        Row: {
+          id: string
+          nombre: string
+          descripcion: string | null
+          categoria: PlanCategoria
+          precio_usd: number | null
+          precio_cop: number | null
+          tipo_precio: TipoPrecio
+          imagen_url: string | null
+          icono: string | null
+          destacado: boolean
+          activo: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          nombre: string
+          descripcion?: string | null
+          categoria: PlanCategoria
+          precio_usd?: number | null
+          precio_cop?: number | null
+          tipo_precio?: TipoPrecio
+          imagen_url?: string | null
+          icono?: string | null
+          destacado?: boolean
+          activo?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          nombre?: string
+          descripcion?: string | null
+          categoria?: PlanCategoria
+          precio_usd?: number | null
+          precio_cop?: number | null
+          tipo_precio?: TipoPrecio
+          imagen_url?: string | null
+          icono?: string | null
+          destacado?: boolean
+          activo?: boolean
           updated_at?: string
         }
         Relationships: []
