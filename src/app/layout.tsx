@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter, Cormorant_Garamond } from 'next/font/google'
+import { Inter, Cormorant_Garamond, Orbitron } from 'next/font/google'
 import './globals.css'
 
 const inter = Inter({
@@ -11,6 +11,12 @@ const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
   weight: ['400', '500', '600'],
   variable: '--font-cormorant',
+})
+
+const orbitron = Orbitron({
+  subsets: ['latin'],
+  weight: ['700', '800', '900'],
+  variable: '--font-orbitron',
 })
 
 export const metadata: Metadata = {
@@ -28,7 +34,7 @@ export default function RootLayout({
     <html
       lang="es"
       data-scroll-behavior="smooth"
-      className={`${inter.variable} ${cormorant.variable} h-full antialiased`}
+      className={`${inter.variable} ${cormorant.variable} ${orbitron.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}

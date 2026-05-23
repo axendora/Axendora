@@ -1,15 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { DashboardShell } from '@/components/dashboard/shell'
-import type { NavLink } from '@/components/dashboard/sidebar'
-
-const adminNavLinks: NavLink[] = [
-  { href: '/admin', label: 'Dashboard', icon: 'dashboard', exact: true },
-  { href: '/admin/clientes', label: 'Clientes', icon: 'users', exact: false },
-  { href: '/admin/solicitudes', label: 'Solicitudes', icon: 'message-square', exact: false },
-  { href: '/admin/servicios', label: 'Catálogo', icon: 'package', exact: false },
-  { href: '/admin/reportes', label: 'Reportes', icon: 'bar-chart', exact: false },
-]
+import { AdminShell } from '@/components/admin/shell'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -27,15 +18,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   if (profile?.role !== 'admin') redirect('/cliente')
 
+  const { count: pendingCount } = await supabase
+    .from('solicitudes')
+    .select('id', { count: 'exact', head: true })
+    .in('estado', ['abierta', 'en_proceso'])
+
   return (
-    <DashboardShell
+    <AdminShell
       nombre={profile.nombre}
       email={profile.email ?? user.email ?? ''}
-      navLinks={adminNavLinks}
-      rootHref="/admin"
-      title="Panel Admin"
+      notificationCount={pendingCount ?? 0}
     >
       {children}
-    </DashboardShell>
+    </AdminShell>
   )
 }
