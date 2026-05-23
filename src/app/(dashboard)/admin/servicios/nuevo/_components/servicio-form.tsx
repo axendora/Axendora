@@ -3,7 +3,6 @@
 import { useActionState, useState, useRef } from 'react'
 import { useFormStatus } from 'react-dom'
 import { ImageIcon, X, Loader2 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
 import { SERVICE_ICONS } from '@/lib/service-icons'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -43,7 +42,6 @@ export function ServicioForm({ action, defaultValues = {}, submitLabel = 'Crear 
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [selectedIcon, setSelectedIcon] = useState(defaultValues.icono ?? '')
   const fileRef = useRef<HTMLInputElement>(null)
-  const supabase = createClient()
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -53,17 +51,17 @@ export function ServicioForm({ action, defaultValues = {}, submitLabel = 'Crear 
     setUploading(true)
 
     try {
-      const ext  = file.name.split('.').pop() ?? 'jpg'
-      const path = `${crypto.randomUUID()}.${ext}`
+      const body = new FormData()
+      body.append('file', file)
 
-      const { error } = await supabase.storage
-        .from('service-images')
-        .upload(path, file, { contentType: file.type, upsert: true })
+      const res = await fetch('/api/admin/service-images', { method: 'POST', body })
+      const json = await res.json().catch(() => ({}))
 
-      if (error) throw new Error(error.message)
+      if (!res.ok) {
+        throw new Error(json?.error || `Error ${res.status} al subir imagen`)
+      }
 
-      const { data } = supabase.storage.from('service-images').getPublicUrl(path)
-      setImageUrl(data.publicUrl)
+      setImageUrl(json.url as string)
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : 'Error al subir imagen')
       setImageUrl(null)
