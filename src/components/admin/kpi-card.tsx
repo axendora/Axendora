@@ -2,20 +2,20 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { TrendingUp, TrendingDown, Minus, type LucideIcon } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface KpiCardProps {
   label: string
   value: number | string
-  icon: LucideIcon
+  iconNode: React.ReactNode
   href: string
   index: number
   change?: number
   suffix?: string
 }
 
-export function KpiCard({ label, value, icon: Icon, href, index, change, suffix }: KpiCardProps) {
+export function KpiCard({ label, value, iconNode, href, index, change, suffix }: KpiCardProps) {
   const trend =
     change !== undefined ? (change > 0 ? 'up' : change < 0 ? 'down' : 'flat') : null
 
@@ -32,7 +32,7 @@ export function KpiCard({ label, value, icon: Icon, href, index, change, suffix 
         <div className="flex items-start justify-between">
           <p className="text-sm font-medium text-[#A1A1AA]">{label}</p>
           <div className="rounded-lg bg-[#14A8B6]/10 p-2">
-            <Icon size={18} className="text-[#14A8B6]" />
+            {iconNode}
           </div>
         </div>
 

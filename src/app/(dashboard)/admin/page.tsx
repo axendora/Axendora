@@ -143,28 +143,28 @@ export default async function AdminDashboardPage() {
     {
       label: 'Clientes registrados',
       value: totalClientes ?? 0,
-      icon: Users,
+      iconNode: <Users size={18} className="text-[#14A8B6]" />,
       href: '/admin/clientes',
       change: clientesTrend,
     },
     {
       label: 'Servicios activos',
       value: serviciosActivos ?? 0,
-      icon: Package,
+      iconNode: <Package size={18} className="text-[#14A8B6]" />,
       href: '/admin/servicios',
       change: undefined,
     },
     {
       label: 'Solicitudes abiertas',
       value: solicitudesAbiertas ?? 0,
-      icon: MessageSquare,
+      iconNode: <MessageSquare size={18} className="text-[#14A8B6]" />,
       href: '/admin/solicitudes',
       change: undefined,
     },
     {
       label: 'En proceso',
       value: pendientesTotal,
-      icon: Clock,
+      iconNode: <Clock size={18} className="text-[#14A8B6]" />,
       href: '/admin/solicitudes',
       change: undefined,
     },
@@ -183,7 +183,15 @@ export default async function AdminDashboardPage() {
       {/* KPI Cards */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {kpis.map((kpi, i) => (
-          <KpiCard key={kpi.label} {...kpi} index={i} />
+          <KpiCard
+            key={kpi.label}
+            label={kpi.label}
+            value={kpi.value}
+            iconNode={kpi.iconNode}
+            href={kpi.href}
+            change={kpi.change}
+            index={i}
+          />
         ))}
       </div>
 
