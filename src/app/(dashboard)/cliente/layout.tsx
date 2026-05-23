@@ -1,14 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { DashboardShell } from '@/components/dashboard/shell'
-import type { NavLink } from '@/components/dashboard/sidebar'
-
-const clienteNavLinks: NavLink[] = [
-  { href: '/cliente', label: 'Dashboard', icon: 'dashboard', exact: true },
-  { href: '/cliente/servicios', label: 'Mis Servicios', icon: 'package', exact: false },
-  { href: '/cliente/solicitudes', label: 'Solicitudes', icon: 'message-square', exact: false },
-  { href: '/cliente/perfil', label: 'Mi Perfil', icon: 'user', exact: false },
-]
+import { ClienteShell } from '@/components/cliente/shell'
 
 export default async function ClienteLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -20,19 +12,25 @@ export default async function ClienteLayout({ children }: { children: React.Reac
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('nombre, email')
+    .select('nombre, email, role')
     .eq('user_id', user.id)
     .single()
 
+  if (profile?.role === 'admin') redirect('/admin')
+
+  const { count: notifCount } = await supabase
+    .from('solicitudes')
+    .select('id', { count: 'exact', head: true })
+    .eq('client_id', user.id)
+    .in('estado', ['abierta', 'en_proceso'])
+
   return (
-    <DashboardShell
+    <ClienteShell
       nombre={profile?.nombre ?? 'Usuario'}
       email={profile?.email ?? user.email ?? ''}
-      navLinks={clienteNavLinks}
-      rootHref="/cliente"
-      title="Panel de cliente"
+      notificationCount={notifCount ?? 0}
     >
       {children}
-    </DashboardShell>
+    </ClienteShell>
   )
 }
