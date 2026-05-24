@@ -3,7 +3,7 @@
 import { useState, useTransition, useMemo } from 'react'
 import {
   TrendingUp, TrendingDown, Scale, Plus, Trash2,
-  ChevronDown, Filter, ArrowUpCircle, ArrowDownCircle,
+  ChevronDown, Filter, ArrowUpCircle, ArrowDownCircle, CalendarRange, X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
@@ -13,41 +13,72 @@ import { CatIcon } from './icon-map'
 import type { Ingreso, Gasto, IngresoCategoria, GastoCategoria } from '@/types/database.types'
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
-type Tab      = 'ingresos' | 'gastos'
-type Periodo  = 'hoy' | 'semana' | 'mes' | 'año' | 'todo'
+type Tab     = 'ingresos' | 'gastos'
+type Periodo = 'hoy' | 'ayer' | 'semana' | 'mes' | 'todo'
 
 const PERIODOS: { value: Periodo; label: string }[] = [
-  { value: 'hoy',    label: 'Hoy'          },
-  { value: 'semana', label: 'Esta semana'   },
-  { value: 'mes',    label: 'Este mes'      },
-  { value: 'año',    label: 'Este año'      },
-  { value: 'todo',   label: 'Todo'          },
+  { value: 'hoy',    label: 'Hoy'         },
+  { value: 'ayer',   label: 'Ayer'        },
+  { value: 'semana', label: 'Esta semana' },
+  { value: 'mes',    label: 'Este mes'    },
+  { value: 'todo',   label: 'Todo'        },
 ]
 
-function startOfPeriodo(periodo: Periodo): Date {
-  const now = new Date()
+// ── Date helpers (string-based — avoids timezone drift) ──────────────────────
+function pad(n: number) { return String(n).padStart(2, '0') }
+
+function localDateStr(d: Date): string {
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
+function toDateStr(iso: string): string {
+  // Works for "2026-05-24" and "2026-05-24T12:00:00Z" etc.
+  return iso.slice(0, 10)
+}
+
+function todayStr()     { return localDateStr(new Date()) }
+function yesterdayStr() { const d = new Date(); d.setDate(d.getDate() - 1); return localDateStr(d) }
+function startOfWeekStr() {
+  const d = new Date()
+  d.setDate(d.getDate() - d.getDay())
+  return localDateStr(d)
+}
+function startOfMonthStr() {
+  const n = new Date()
+  return `${n.getFullYear()}-${pad(n.getMonth() + 1)}-01`
+}
+
+function isInPeriodo(fecha: string, periodo: Periodo): boolean {
+  const d = toDateStr(fecha)
+  const today = todayStr()
   switch (periodo) {
-    case 'hoy':
-      return new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    case 'semana': {
-      const d = new Date(now)
-      d.setDate(now.getDate() - now.getDay())
-      d.setHours(0, 0, 0, 0)
-      return d
-    }
-    case 'mes':
-      return new Date(now.getFullYear(), now.getMonth(), 1)
-    case 'año':
-      return new Date(now.getFullYear(), 0, 1)
-    default:
-      return new Date(0)
+    case 'hoy':    return d === today
+    case 'ayer':   return d === yesterdayStr()
+    case 'semana': return d >= startOfWeekStr() && d <= today
+    case 'mes':    return d >= startOfMonthStr() && d <= today
+    default:       return true
   }
 }
 
+function isInRango(fecha: string, desde: string, hasta: string): boolean {
+  const d = toDateStr(fecha)
+  if (desde && hasta) return d >= desde && d <= hasta
+  if (desde) return d >= desde
+  if (hasta) return d <= hasta
+  return true
+}
+
+// ── Formatters ────────────────────────────────────────────────────────────────
 function formatFecha(iso: string) {
-  const d = new Date(iso)
+  // Parse as local date to avoid UTC offset display issues
+  const [y, m, day] = iso.slice(0, 10).split('-').map(Number)
+  const d    = new Date(y, m - 1, day)
   const fecha = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', year: 'numeric' }).format(d)
-  const hora  = new Intl.DateTimeFormat('es', { hour: '2-digit', minute: '2-digit' }).format(d)
+  // Time part (only meaningful if the iso string contains time)
+  const hasTime = iso.length > 10
+  const hora  = hasTime
+    ? new Intl.DateTimeFormat('es', { hour: '2-digit', minute: '2-digit' }).format(new Date(iso))
+    : ''
   return { fecha, hora }
 }
 
@@ -93,58 +124,72 @@ function DeleteBtn({ id, tipo }: { id: string; tipo: Tab }) {
 export function FinanzasClient({ ingresos, gastos, ingresoCategorias, gastoCategorias }: Props) {
   const [tab, setTab]                   = useState<Tab>('ingresos')
   const [periodo, setPeriodo]           = useState<Periodo>('mes')
+  const [modoRango, setModoRango]       = useState(false)
+  const [rangoDesde, setRangoDesde]     = useState('')
+  const [rangoHasta, setRangoHasta]     = useState('')
   const [categoriaFiltro, setCatFiltro] = useState<string>('todas')
   const [showCatDropdown, setShowCat]   = useState(false)
   const [showModal, setShowModal]       = useState(false)
 
-  // ── Filtering ──
-  const since = useMemo(() => startOfPeriodo(periodo), [periodo])
+  // ── Filtering ──────────────────────────────────────────────────────────────
+  function matchesFecha(fecha: string): boolean {
+    if (modoRango) return isInRango(fecha, rangoDesde, rangoHasta)
+    return isInPeriodo(fecha, periodo)
+  }
 
-  const ingresosFiltrados = useMemo(() => {
-    return ingresos.filter((i) => {
-      const dentroFecha = new Date(i.fecha) >= since
-      const dentroCategoria = categoriaFiltro === 'todas' || i.categoria_id === categoriaFiltro
-      return dentroFecha && dentroCategoria
-    })
-  }, [ingresos, since, categoriaFiltro])
+  const ingresosFiltrados = useMemo(() => ingresos.filter((i) =>
+    matchesFecha(i.fecha) && (categoriaFiltro === 'todas' || i.categoria_id === categoriaFiltro)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ), [ingresos, periodo, modoRango, rangoDesde, rangoHasta, categoriaFiltro])
 
-  const gastosFiltrados = useMemo(() => {
-    return gastos.filter((g) => {
-      const dentroFecha = new Date(g.fecha) >= since
-      const dentroCategoria = categoriaFiltro === 'todas' || g.categoria_id === categoriaFiltro
-      return dentroFecha && dentroCategoria
-    })
-  }, [gastos, since, categoriaFiltro])
+  const gastosFiltrados = useMemo(() => gastos.filter((g) =>
+    matchesFecha(g.fecha) && (categoriaFiltro === 'todas' || g.categoria_id === categoriaFiltro)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ), [gastos, periodo, modoRango, rangoDesde, rangoHasta, categoriaFiltro])
 
-  // ── Totals (always use mes for summary, independent of category filter) ──
-  const sinceMes = useMemo(() => startOfPeriodo('mes'), [])
-  const totalIngresosMes = ingresos.filter(i => new Date(i.fecha) >= sinceMes).reduce((s, i) => s + i.monto, 0)
-  const totalGastosMes   = gastos.filter(g => new Date(g.fecha) >= sinceMes).reduce((s, g) => s + g.monto, 0)
+  // ── Summary cards (always Este mes, independent of filters) ───────────────
+  const startMes = startOfMonthStr()
+  const today    = todayStr()
+  const totalIngresosMes = ingresos.filter(i => toDateStr(i.fecha) >= startMes && toDateStr(i.fecha) <= today).reduce((s, i) => s + i.monto, 0)
+  const totalGastosMes   = gastos.filter(g => toDateStr(g.fecha) >= startMes && toDateStr(g.fecha) <= today).reduce((s, g) => s + g.monto, 0)
   const balanceMes       = totalIngresosMes - totalGastosMes
 
-  const totalFiltrado = tab === 'ingresos'
-    ? ingresosFiltrados.reduce((s, i) => s + i.monto, 0)
-    : gastosFiltrados.reduce((s, g) => s + g.monto, 0)
-
   const lista        = tab === 'ingresos' ? ingresosFiltrados : gastosFiltrados
+  const totalFiltrado = lista.reduce((s, e) => s + e.monto, 0)
   const categorias   = tab === 'ingresos' ? ingresoCategorias : gastoCategorias
   const catFiltroNombre = categorias.find(c => c.id === categoriaFiltro)?.nombre
 
+  // ── Periodo label for total bar ────────────────────────────────────────────
+  const periodoLabel = modoRango
+    ? rangoDesde && rangoHasta
+      ? `${rangoDesde} → ${rangoHasta}`
+      : rangoDesde ? `desde ${rangoDesde}` : rangoHasta ? `hasta ${rangoHasta}` : 'Rango'
+    : PERIODOS.find(p => p.value === periodo)?.label ?? ''
+
+  // ── Handlers ───────────────────────────────────────────────────────────────
   function onTabChange(t: Tab) {
-    setTab(t)
-    setCatFiltro('todas')
-    setShowCat(false)
+    setTab(t); setCatFiltro('todas'); setShowCat(false)
   }
 
-  function onModalSuccess() {
-    setShowModal(false)
-    // Page auto-refreshes via revalidatePath + Next.js router cache invalidation
+  function selectPeriodo(p: Periodo) {
+    setPeriodo(p); setModoRango(false)
   }
+
+  function activarRango() {
+    setModoRango(true)
+  }
+
+  function limpiarFiltros() {
+    setPeriodo('mes'); setModoRango(false); setRangoDesde(''); setRangoHasta(''); setCatFiltro('todas')
+  }
+
+  const hayFiltros = modoRango ? (!!rangoDesde || !!rangoHasta || categoriaFiltro !== 'todas')
+                               : (periodo !== 'mes' || categoriaFiltro !== 'todas')
 
   return (
     <div className="space-y-6">
 
-      {/* ── Summary cards (this month, always) ─────────────────────────── */}
+      {/* ── Summary cards ───────────────────────────────────────────────── */}
       <div className="grid gap-3 sm:grid-cols-3">
         <SummaryCard
           label="Ingresos este mes"
@@ -167,7 +212,7 @@ export function FinanzasClient({ ingresos, gastos, ingresoCategorias, gastoCateg
         />
       </div>
 
-      {/* ── Tabs ────────────────────────────────────────────────────────── */}
+      {/* ── Tabs + botón nuevo ──────────────────────────────────────────── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex rounded-xl border border-border bg-card p-1">
           {(['ingresos', 'gastos'] as Tab[]).map((t) => (
@@ -183,10 +228,7 @@ export function FinanzasClient({ ingresos, gastos, ingresoCategorias, gastoCateg
                   : 'text-muted-foreground hover:text-foreground',
               )}
             >
-              {t === 'ingresos'
-                ? <ArrowUpCircle size={15} />
-                : <ArrowDownCircle size={15} />
-              }
+              {t === 'ingresos' ? <ArrowUpCircle size={15} /> : <ArrowDownCircle size={15} />}
               {t === 'ingresos' ? 'Ingresos' : 'Gastos'}
               <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold">
                 {t === 'ingresos' ? ingresosFiltrados.length : gastosFiltrados.length}
@@ -211,80 +253,129 @@ export function FinanzasClient({ ingresos, gastos, ingresoCategorias, gastoCateg
       </div>
 
       {/* ── Filter bar ──────────────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center gap-3">
-        {/* Periodo pills */}
-        <div className="flex flex-wrap gap-1.5">
-          {PERIODOS.map((p) => (
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center gap-3">
+
+          {/* Período pills (desactivados cuando hay rango activo) */}
+          <div className="flex flex-wrap gap-1.5">
+            {PERIODOS.map((p) => (
+              <button
+                key={p.value}
+                onClick={() => selectPeriodo(p.value)}
+                className={cn(
+                  'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                  !modoRango && periodo === p.value
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-border text-muted-foreground hover:border-primary/30 hover:text-foreground',
+                )}
+              >
+                {p.label}
+              </button>
+            ))}
+
+            {/* Rango pill */}
             <button
-              key={p.value}
-              onClick={() => setPeriodo(p.value)}
+              onClick={activarRango}
               className={cn(
-                'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-                periodo === p.value
+                'flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                modoRango
                   ? 'border-primary bg-primary/10 text-primary'
                   : 'border-border text-muted-foreground hover:border-primary/30 hover:text-foreground',
               )}
             >
-              {p.label}
+              <CalendarRange size={11} />
+              Rango
             </button>
-          ))}
-        </div>
+          </div>
 
-        {/* Separador */}
-        <div className="h-5 w-px bg-border" />
+          <div className="h-5 w-px bg-border" />
 
-        {/* Categoría dropdown */}
-        <div className="relative">
-          <button
-            onClick={() => setShowCat(!showCatDropdown)}
-            className={cn(
-              'flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-              categoriaFiltro !== 'todas'
-                ? 'border-primary bg-primary/10 text-primary'
-                : 'border-border text-muted-foreground hover:text-foreground',
-            )}
-          >
-            <Filter size={11} />
-            {catFiltroNombre ?? 'Categoría'}
-            <ChevronDown size={10} className={cn('transition-transform', showCatDropdown && 'rotate-180')} />
-          </button>
+          {/* Categoría dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setShowCat(!showCatDropdown)}
+              className={cn(
+                'flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                categoriaFiltro !== 'todas'
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-border text-muted-foreground hover:text-foreground',
+              )}
+            >
+              <Filter size={11} />
+              {catFiltroNombre ?? 'Categoría'}
+              <ChevronDown size={10} className={cn('transition-transform', showCatDropdown && 'rotate-180')} />
+            </button>
 
-          {showCatDropdown && (
-            <div className="absolute left-0 top-full z-20 mt-1 w-48 overflow-hidden rounded-xl border border-border bg-card shadow-lg">
-              <button
-                onClick={() => { setCatFiltro('todas'); setShowCat(false) }}
-                className={cn(
-                  'flex w-full items-center gap-2 px-3 py-2 text-xs hover:bg-muted/50',
-                  categoriaFiltro === 'todas' && 'text-primary',
-                )}
-              >
-                Todas las categorías
-              </button>
-              {categorias.map((c) => (
+            {showCatDropdown && (
+              <div className="absolute left-0 top-full z-20 mt-1 w-48 overflow-hidden rounded-xl border border-border bg-card shadow-lg">
                 <button
-                  key={c.id}
-                  onClick={() => { setCatFiltro(c.id); setShowCat(false) }}
-                  className={cn(
-                    'flex w-full items-center gap-2 px-3 py-2 text-xs hover:bg-muted/50',
-                    categoriaFiltro === c.id && 'text-primary',
-                  )}
+                  onClick={() => { setCatFiltro('todas'); setShowCat(false) }}
+                  className={cn('flex w-full items-center gap-2 px-3 py-2 text-xs hover:bg-muted/50', categoriaFiltro === 'todas' && 'text-primary')}
                 >
-                  <CatIcon nombre={c.icono} color={c.color} size={12} />
-                  {c.nombre}
+                  Todas las categorías
                 </button>
-              ))}
-            </div>
+                {categorias.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => { setCatFiltro(c.id); setShowCat(false) }}
+                    className={cn('flex w-full items-center gap-2 px-3 py-2 text-xs hover:bg-muted/50', categoriaFiltro === c.id && 'text-primary')}
+                  >
+                    <CatIcon nombre={c.icono} color={c.color} size={12} />
+                    {c.nombre}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Limpiar */}
+          {hayFiltros && (
+            <button
+              onClick={limpiarFiltros}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
+            >
+              <X size={11} />
+              Limpiar
+            </button>
           )}
         </div>
 
-        {/* Reset */}
-        {(categoriaFiltro !== 'todas' || periodo !== 'mes') && (
-          <button
-            onClick={() => { setPeriodo('mes'); setCatFiltro('todas') }}
-            className="text-xs text-muted-foreground hover:text-primary"
-          >
-            Limpiar filtros
-          </button>
+        {/* Rango de fechas — se muestra solo cuando está activo */}
+        {modoRango && (
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
+            <CalendarRange size={14} className="shrink-0 text-primary" />
+            <span className="text-xs font-medium text-primary">Rango personalizado</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1.5">
+                <label className="text-[11px] text-muted-foreground">Desde</label>
+                <input
+                  type="date"
+                  value={rangoDesde}
+                  max={rangoHasta || undefined}
+                  onChange={(e) => setRangoDesde(e.target.value)}
+                  className="rounded-lg border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <label className="text-[11px] text-muted-foreground">Hasta</label>
+                <input
+                  type="date"
+                  value={rangoHasta}
+                  min={rangoDesde || undefined}
+                  onChange={(e) => setRangoHasta(e.target.value)}
+                  className="rounded-lg border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+            </div>
+            {(rangoDesde || rangoHasta) && (
+              <button
+                onClick={() => { setRangoDesde(''); setRangoHasta('') }}
+                className="ml-auto text-[11px] text-muted-foreground hover:text-destructive"
+              >
+                Borrar fechas
+              </button>
+            )}
+          </div>
         )}
       </div>
 
@@ -297,27 +388,24 @@ export function FinanzasClient({ ingresos, gastos, ingresoCategorias, gastoCateg
           }
           <p className="text-sm font-medium">Sin {tab} en este período</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Cambia el período o registra un nuevo{' '}
-            {tab === 'ingresos' ? 'ingreso' : 'gasto'}.
+            Cambia el período o registra un nuevo {tab === 'ingresos' ? 'ingreso' : 'gasto'}.
           </p>
         </div>
       ) : (
         <div className="overflow-hidden rounded-xl border border-border bg-card">
-          {/* Header de columnas */}
           <div className="hidden grid-cols-[1fr_auto_auto_auto] items-center gap-4 border-b border-border px-5 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground sm:grid">
             <span>Descripción</span>
-            <span>Fecha y hora</span>
+            <span>Fecha</span>
             <span className="text-right">Monto</span>
             <span />
           </div>
 
           <div className="divide-y divide-border">
             {lista.map((entry) => {
-              const cat   = entry.categoria
+              const cat = entry.categoria
               const { fecha, hora } = formatFecha(entry.fecha)
               return (
                 <div key={entry.id} className="flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-muted/20">
-                  {/* Ícono categoría */}
                   <div
                     className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
                     style={{ backgroundColor: cat ? `${cat.color}18` : '#1FA8B818' }}
@@ -325,7 +413,6 @@ export function FinanzasClient({ ingresos, gastos, ingresoCategorias, gastoCateg
                     <CatIcon nombre={cat?.icono ?? 'Tag'} color={cat?.color ?? '#1FA8B8'} size={16} />
                   </div>
 
-                  {/* Título + categoría */}
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{entry.titulo}</p>
                     <div className="mt-0.5 flex items-center gap-2">
@@ -338,31 +425,23 @@ export function FinanzasClient({ ingresos, gastos, ingresoCategorias, gastoCateg
                         </span>
                       )}
                       {entry.descripcion && (
-                        <span className="truncate text-[11px] text-muted-foreground">
-                          {entry.descripcion}
-                        </span>
+                        <span className="truncate text-[11px] text-muted-foreground">{entry.descripcion}</span>
                       )}
                     </div>
                   </div>
 
-                  {/* Fecha */}
                   <div className="hidden shrink-0 text-right text-xs text-muted-foreground sm:block">
                     <p>{fecha}</p>
-                    <p className="text-[11px] opacity-70">{hora}</p>
+                    {hora && <p className="text-[11px] opacity-70">{hora}</p>}
                   </div>
 
-                  {/* Monto */}
                   <div className="shrink-0 text-right">
-                    <p className={cn(
-                      'text-sm font-bold',
-                      tab === 'ingresos' ? 'text-success' : 'text-destructive',
-                    )}>
+                    <p className={cn('text-sm font-bold', tab === 'ingresos' ? 'text-success' : 'text-destructive')}>
                       {tab === 'ingresos' ? '+' : '−'} {formatUSD(entry.monto)}
                     </p>
                     <p className="text-[11px] text-muted-foreground sm:hidden">{fecha}</p>
                   </div>
 
-                  {/* Eliminar */}
                   <DeleteBtn id={entry.id} tipo={tab} />
                 </div>
               )
@@ -377,12 +456,9 @@ export function FinanzasClient({ ingresos, gastos, ingresoCategorias, gastoCateg
             <span className="text-xs font-medium text-muted-foreground">
               Total · {lista.length} registro{lista.length !== 1 ? 's' : ''}
               {categoriaFiltro !== 'todas' && ` · ${catFiltroNombre}`}
-              {` · ${PERIODOS.find(p => p.value === periodo)?.label}`}
+              {` · ${periodoLabel}`}
             </span>
-            <span className={cn(
-              'text-base font-bold',
-              tab === 'ingresos' ? 'text-success' : 'text-destructive',
-            )}>
+            <span className={cn('text-base font-bold', tab === 'ingresos' ? 'text-success' : 'text-destructive')}>
               {tab === 'ingresos' ? '+' : '−'} {formatUSD(totalFiltrado)}
             </span>
           </div>
@@ -395,7 +471,7 @@ export function FinanzasClient({ ingresos, gastos, ingresoCategorias, gastoCateg
           tipo={tab === 'ingresos' ? 'ingreso' : 'gasto'}
           categorias={categorias}
           onClose={() => setShowModal(false)}
-          onSuccess={onModalSuccess}
+          onSuccess={() => setShowModal(false)}
         />
       )}
     </div>
