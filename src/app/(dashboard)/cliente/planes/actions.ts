@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 export type SolicitarPlanState =
@@ -69,15 +69,9 @@ export async function solicitarPlanAction(
 
   if (error) return { error: error.message }
 
-  // Obtener WhatsApp del admin — busca la fila que tenga whatsapp configurado
-  const service = await createServiceClient()
-  const { data: settings } = await service
-    .from('agency_settings')
-    .select('whatsapp')
-    .not('whatsapp', 'is', null)
-    .order('updated_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+  // Obtener WhatsApp del admin via RPC (SECURITY DEFINER — bypasa RLS siempre)
+  const { data: whatsappResult } = await supabase.rpc('get_admin_whatsapp')
+  const adminWhatsapp: string | null = (whatsappResult as unknown as string) || null
 
   revalidatePath('/cliente/solicitudes')
   revalidatePath('/admin/solicitudes')
@@ -87,6 +81,6 @@ export async function solicitarPlanAction(
     planNombre:   plan.nombre,
     duracionDias: plan.duracion_dias,
     ofertaTitulo,
-    whatsapp:     settings?.whatsapp ?? null,
+    whatsapp:     adminWhatsapp,
   }
 }

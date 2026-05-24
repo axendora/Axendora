@@ -1,4 +1,4 @@
-import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Layers, AlertTriangle } from 'lucide-react'
 import { PLAN_CATEGORIAS } from '@/lib/plans'
@@ -75,16 +75,9 @@ export default async function ClientePlanesPage() {
   // Si la tabla de ofertas no existe aún, degradar sin error
   const ofertas = (!ofertasRes.error ? (ofertasRes.data ?? []) : []) as OfertaActiva[]
 
-  // Service client bypasses RLS — busca la fila que tenga whatsapp configurado
-  const serviceSupabase = await createServiceClient()
-  const { data: agencyData } = await serviceSupabase
-    .from('agency_settings')
-    .select('whatsapp')
-    .not('whatsapp', 'is', null)
-    .order('updated_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
-  const whatsapp: string | null = agencyData?.whatsapp ?? null
+  // RPC con SECURITY DEFINER — bypasa RLS, no necesita service key
+  const { data: whatsappResult } = await supabase.rpc('get_admin_whatsapp')
+  const whatsapp: string | null = (whatsappResult as unknown as string) || null
 
   if (planesError) {
     return (
