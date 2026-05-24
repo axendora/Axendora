@@ -1,3 +1,4 @@
+
 -- ============================================================
 -- Migración 004: Campos CRM adicionales en profiles
 -- Añade información de empresa, contacto y notas internas

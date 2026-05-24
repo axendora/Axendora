@@ -7,10 +7,12 @@ import { cn } from '@/lib/utils'
 import type { SolicitudEstado, SolicitudTipo, SolicitudPrioridad } from '@/types/database.types'
 
 const estadoConfig: Record<SolicitudEstado, { label: string; className: string }> = {
-  abierta:    { label: 'Abierta',     className: 'bg-primary/10 text-primary' },
-  en_proceso: { label: 'En proceso',  className: 'bg-warning/10 text-warning' },
+  abierta:    { label: 'Pendiente',   className: 'bg-primary/10 text-primary' },
+  en_proceso: { label: 'En revisión', className: 'bg-warning/10 text-warning' },
   resuelta:   { label: 'Resuelta',    className: 'bg-success/10 text-success' },
   cerrada:    { label: 'Cerrada',     className: 'bg-muted text-muted-foreground' },
+  aprobada:   { label: 'Aprobada',    className: 'bg-success/10 text-success' },
+  rechazada:  { label: 'Rechazada',   className: 'bg-error/10 text-error' },
 }
 
 const tipoLabel: Record<SolicitudTipo, string> = {
@@ -41,7 +43,7 @@ export default async function SolicitudesPage() {
 
   const { data: solicitudes } = await supabase
     .from('solicitudes')
-    .select('id, titulo, tipo, estado, prioridad, created_at')
+    .select('id, titulo, tipo, estado, prioridad, motivo_rechazo, created_at')
     .eq('client_id', user.id)
     .order('created_at', { ascending: false })
 
@@ -94,21 +96,31 @@ export default async function SolicitudesPage() {
               const estado = estadoConfig[s.estado as SolicitudEstado]
               const prioridad = prioridadConfig[s.prioridad as SolicitudPrioridad]
               return (
-                <div
-                  key={s.id}
-                  className="flex flex-col gap-2 px-5 py-4 sm:grid sm:grid-cols-[1fr_120px_110px_90px_110px] sm:items-center sm:gap-4"
-                >
-                  <p className="text-sm font-medium">{s.titulo}</p>
-                  <p className="text-xs text-muted-foreground sm:text-sm">
-                    {tipoLabel[s.tipo as SolicitudTipo]}
-                  </p>
-                  <p className={cn('text-xs font-medium sm:text-sm', prioridad.className)}>
-                    {prioridad.label}
-                  </p>
-                  <span className={cn('w-fit rounded-full px-2.5 py-0.5 text-xs font-medium', estado.className)}>
-                    {estado.label}
-                  </span>
-                  <p className="text-xs text-muted-foreground">{formatDate(s.created_at)}</p>
+                <div key={s.id} className="px-5 py-4">
+                  <div className="flex flex-col gap-2 sm:grid sm:grid-cols-[1fr_120px_110px_90px_110px] sm:items-center sm:gap-4">
+                    <p className="text-sm font-medium">{s.titulo}</p>
+                    <p className="text-xs text-muted-foreground sm:text-sm">
+                      {tipoLabel[s.tipo as SolicitudTipo]}
+                    </p>
+                    <p className={cn('text-xs font-medium sm:text-sm', prioridad.className)}>
+                      {prioridad.label}
+                    </p>
+                    <span className={cn('w-fit rounded-full px-2.5 py-0.5 text-xs font-medium', estado.className)}>
+                      {estado.label}
+                    </span>
+                    <p className="text-xs text-muted-foreground">{formatDate(s.created_at)}</p>
+                  </div>
+                  {s.estado === 'rechazada' && s.motivo_rechazo && (
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      <span className="font-medium text-[#EF4444]">Motivo: </span>
+                      {s.motivo_rechazo}
+                    </p>
+                  )}
+                  {s.estado === 'aprobada' && (
+                    <p className="mt-2 text-xs text-[#10B981]">
+                      Tu solicitud fue aprobada y el servicio está siendo configurado.
+                    </p>
+                  )}
                 </div>
               )
             })}

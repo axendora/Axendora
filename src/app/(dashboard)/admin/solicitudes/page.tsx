@@ -9,6 +9,8 @@ const estadoConfig: Record<SolicitudEstado, { label: string; className: string }
   en_proceso: { label: 'En proceso', className: 'bg-warning/10 text-warning' },
   resuelta:   { label: 'Resuelta',   className: 'bg-success/10 text-success' },
   cerrada:    { label: 'Cerrada',    className: 'bg-muted text-muted-foreground' },
+  aprobada:   { label: 'Aprobada',   className: 'bg-success/10 text-success' },
+  rechazada:  { label: 'Rechazada',  className: 'bg-error/10 text-error' },
 }
 
 const tipoLabel: Record<SolicitudTipo, string> = {

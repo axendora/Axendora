@@ -25,6 +25,7 @@ interface PlanFormProps {
     tipo_precio?: TipoPrecio
     imagen_url?: string | null
     icono?: string
+    duracion_dias?: number | null
     destacado?: boolean
     activo?: boolean
   }
@@ -199,6 +200,27 @@ export function PlanForm({ action, defaultValues = {}, submitLabel = 'Crear plan
             placeholder="Ej. 1200000"
             className={INPUT} />
         </div>
+      </div>
+
+      {/* ── Duración por defecto ───────────────────────────── */}
+      <div className="space-y-1.5">
+        <label htmlFor="duracion_dias" className="text-sm font-medium">
+          Duración por defecto
+          <span className="ml-1.5 text-xs text-muted-foreground">(días, opcional)</span>
+        </label>
+        <input
+          id="duracion_dias"
+          name="duracion_dias"
+          type="number"
+          min="1"
+          max="3650"
+          defaultValue={defaultValues.duracion_dias ?? ''}
+          placeholder="Ej. 30"
+          className={INPUT}
+        />
+        <p className="text-xs text-muted-foreground/80">
+          Cuántos días dura el plan cuando un cliente lo contrata. Se puede editar al aprobar.
+        </p>
       </div>
 
       {/* ── Tipo de precio ─────────────────────────────────── */}

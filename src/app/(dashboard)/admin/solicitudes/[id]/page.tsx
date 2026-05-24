@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { SolicitudEstado, SolicitudTipo, SolicitudPrioridad } from '@/types/database.types'
 import { UpdateSolicitudForm } from './_components/update-solicitud-form'
+import { ApproveRejectPanel } from './_components/approve-reject-panel'
 import { buttonVariants } from '@/components/ui/button'
 
 const estadoConfig: Record<SolicitudEstado, { label: string; className: string }> = {
@@ -12,6 +13,8 @@ const estadoConfig: Record<SolicitudEstado, { label: string; className: string }
   en_proceso: { label: 'En proceso', className: 'bg-warning/10 text-warning' },
   resuelta:   { label: 'Resuelta',   className: 'bg-success/10 text-success' },
   cerrada:    { label: 'Cerrada',    className: 'bg-muted text-muted-foreground' },
+  aprobada:   { label: 'Aprobada',   className: 'bg-success/10 text-success' },
+  rechazada:  { label: 'Rechazada',  className: 'bg-error/10 text-error' },
 }
 
 const prioridadConfig: Record<SolicitudPrioridad, { label: string; className: string }> = {
@@ -38,11 +41,14 @@ export default async function SolicitudDetailPage({
   const { id } = await params
   const supabase = await createClient()
 
-  const { data: solicitud } = await supabase
-    .from('solicitudes')
-    .select('*')
-    .eq('id', id)
-    .single()
+  const [{ data: solicitud }, { data: planes }] = await Promise.all([
+    supabase.from('solicitudes').select('*').eq('id', id).single(),
+    supabase
+      .from('plans')
+      .select('id, nombre, categoria, tipo_precio, precio_usd, precio_cop, duracion_dias')
+      .eq('activo', true)
+      .order('nombre'),
+  ])
 
   if (!solicitud) notFound()
 
@@ -52,8 +58,12 @@ export default async function SolicitudDetailPage({
     .eq('user_id', solicitud.client_id)
     .single()
 
-  const estado = estadoConfig[solicitud.estado as SolicitudEstado]
+  const estado    = estadoConfig[solicitud.estado as SolicitudEstado]
   const prioridad = prioridadConfig[solicitud.prioridad as SolicitudPrioridad]
+
+  const esSolicitudPlan   = solicitud.tipo === 'plan'
+  const estadoPendiente   = solicitud.estado === 'abierta' || solicitud.estado === 'en_proceso'
+  const mostrarPanel      = esSolicitudPlan && estadoPendiente
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -92,6 +102,16 @@ export default async function SolicitudDetailPage({
           </p>
         </div>
 
+        {/* Motivo de rechazo */}
+        {solicitud.estado === 'rechazada' && solicitud.motivo_rechazo && (
+          <div className="border-t border-border pt-4">
+            <p className="mb-1 text-xs font-medium text-muted-foreground">Motivo del rechazo</p>
+            <p className="text-sm text-foreground/80 whitespace-pre-wrap">
+              {solicitud.motivo_rechazo}
+            </p>
+          </div>
+        )}
+
         {/* Client info */}
         {cliente && (
           <div className="border-t border-border pt-4">
@@ -114,7 +134,16 @@ export default async function SolicitudDetailPage({
         )}
       </div>
 
-      {/* Update form */}
+      {/* Panel de aprobación/rechazo — solo para solicitudes de tipo plan pendientes */}
+      {mostrarPanel && (
+        <ApproveRejectPanel
+          solicitudId={solicitud.id}
+          preselectedPlanId={solicitud.plan_id ?? null}
+          planes={planes ?? []}
+        />
+      )}
+
+      {/* Update form — estado y prioridad */}
       <UpdateSolicitudForm
         id={solicitud.id}
         currentEstado={solicitud.estado as SolicitudEstado}

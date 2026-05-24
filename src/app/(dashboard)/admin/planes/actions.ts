@@ -22,15 +22,17 @@ export async function createPlanAction(
   _: PlanActionState,
   formData: FormData,
 ): Promise<PlanActionState> {
-  const nombre      = (formData.get('nombre') as string).trim()
-  const descripcion = (formData.get('descripcion') as string).trim() || null
-  const icono       = (formData.get('icono') as string).trim() || null
-  const imagen_url  = (formData.get('imagen_url') as string).trim() || null
-  const categoria   = formData.get('categoria') as PlanCategoria
-  const tipo_precio = (formData.get('tipo_precio') as TipoPrecio) || 'mensual'
-  const precio_usd  = parseNumeric(formData.get('precio_usd'))
-  const precio_cop  = parseNumeric(formData.get('precio_cop'))
-  const destacado   = formData.get('destacado') === 'on'
+  const nombre        = (formData.get('nombre') as string).trim()
+  const descripcion   = (formData.get('descripcion') as string).trim() || null
+  const icono         = (formData.get('icono') as string).trim() || null
+  const imagen_url    = (formData.get('imagen_url') as string).trim() || null
+  const categoria     = formData.get('categoria') as PlanCategoria
+  const tipo_precio   = (formData.get('tipo_precio') as TipoPrecio) || 'mensual'
+  const precio_usd    = parseNumeric(formData.get('precio_usd'))
+  const precio_cop    = parseNumeric(formData.get('precio_cop'))
+  const duracionRaw   = formData.get('duracion_dias') as string
+  const duracion_dias = duracionRaw ? parseInt(duracionRaw, 10) : null
+  const destacado     = formData.get('destacado') === 'on'
 
   if (!nombre) return { error: 'El nombre es obligatorio' }
   if (!CATEGORIAS.includes(categoria)) return { error: 'Categoría inválida' }
@@ -41,7 +43,7 @@ export async function createPlanAction(
     .from('plans')
     .insert({
       nombre, descripcion, icono, imagen_url,
-      categoria, tipo_precio, precio_usd, precio_cop, destacado,
+      categoria, tipo_precio, precio_usd, precio_cop, duracion_dias, destacado,
     })
 
   if (error) return { error: error.message }

@@ -1,6 +1,6 @@
 export type Role = 'client' | 'admin'
 export type ServiceEstado = 'en_configuracion' | 'activo' | 'pausado' | 'finalizado'
-export type SolicitudEstado = 'abierta' | 'en_proceso' | 'resuelta' | 'cerrada'
+export type SolicitudEstado = 'abierta' | 'en_proceso' | 'resuelta' | 'cerrada' | 'aprobada' | 'rechazada'
 export type SolicitudTipo = 'soporte' | 'consulta' | 'cambio' | 'plan' | 'otro'
 export type SolicitudPrioridad = 'baja' | 'media' | 'alta'
 export type PlanCategoria = 'marketing' | 'diseno' | 'web'
@@ -95,7 +95,8 @@ export type Database = {
         Row: {
           id: string
           client_id: string
-          service_id: string
+          service_id: string | null
+          plan_id: string | null
           estado: ServiceEstado
           fecha_inicio: string | null
           fecha_fin: string | null
@@ -106,7 +107,8 @@ export type Database = {
         Insert: {
           id?: string
           client_id: string
-          service_id: string
+          service_id?: string | null
+          plan_id?: string | null
           estado?: ServiceEstado
           fecha_inicio?: string | null
           fecha_fin?: string | null
@@ -115,6 +117,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          service_id?: string | null
+          plan_id?: string | null
           estado?: ServiceEstado
           fecha_inicio?: string | null
           fecha_fin?: string | null
@@ -133,6 +137,7 @@ export type Database = {
           estado: SolicitudEstado
           prioridad: SolicitudPrioridad
           plan_id: string | null
+          motivo_rechazo: string | null
           created_at: string
           updated_at: string
         }
@@ -145,6 +150,7 @@ export type Database = {
           estado?: SolicitudEstado
           prioridad?: SolicitudPrioridad
           plan_id?: string | null
+          motivo_rechazo?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -155,6 +161,7 @@ export type Database = {
           estado?: SolicitudEstado
           prioridad?: SolicitudPrioridad
           plan_id?: string | null
+          motivo_rechazo?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -170,6 +177,7 @@ export type Database = {
           tipo_precio: TipoPrecio
           imagen_url: string | null
           icono: string | null
+          duracion_dias: number | null
           destacado: boolean
           activo: boolean
           created_at: string
@@ -185,6 +193,7 @@ export type Database = {
           tipo_precio?: TipoPrecio
           imagen_url?: string | null
           icono?: string | null
+          duracion_dias?: number | null
           destacado?: boolean
           activo?: boolean
           created_at?: string
@@ -199,6 +208,7 @@ export type Database = {
           tipo_precio?: TipoPrecio
           imagen_url?: string | null
           icono?: string | null
+          duracion_dias?: number | null
           destacado?: boolean
           activo?: boolean
           updated_at?: string

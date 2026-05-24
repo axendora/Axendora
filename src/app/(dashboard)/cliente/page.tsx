@@ -31,10 +31,12 @@ type ServicioItem = {
 }
 
 const estadoConfig: Record<SolicitudEstado, { label: string; className: string }> = {
-  abierta:    { label: 'Abierta',    className: 'bg-[#14A8B6]/10 text-[#14A8B6]' },
-  en_proceso: { label: 'En proceso', className: 'bg-[#F59E0B]/10 text-[#F59E0B]' },
+  abierta:    { label: 'Pendiente',  className: 'bg-[#14A8B6]/10 text-[#14A8B6]' },
+  en_proceso: { label: 'En revisión', className: 'bg-[#F59E0B]/10 text-[#F59E0B]' },
   resuelta:   { label: 'Resuelta',   className: 'bg-[#10B981]/10 text-[#10B981]' },
   cerrada:    { label: 'Cerrada',    className: 'bg-[#27272A] text-[#71717A]' },
+  aprobada:   { label: 'Aprobada',   className: 'bg-[#10B981]/10 text-[#10B981]' },
+  rechazada:  { label: 'Rechazada',  className: 'bg-[#EF4444]/10 text-[#EF4444]' },
 }
 
 const servicioEstadoConfig: Record<ServiceEstado, { label: string; className: string }> = {
