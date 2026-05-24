@@ -1,14 +1,17 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { CheckCircle } from 'lucide-react'
+import { useState, useTransition, useEffect } from 'react'
+import { CheckCircle, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 import { updateAgenciaAction } from '../actions'
+import { TIMEZONES, DEFAULT_TIMEZONE } from '@/lib/timezone'
 import type { AgencySettings } from '@/types/database.types'
 
 const INPUT =
   'w-full rounded-lg border border-[#27272A] bg-[#0A0A0A] px-3 py-2 text-sm text-white placeholder:text-[#52525B] focus:outline-none focus:ring-2 focus:ring-[#14A8B6]/40 focus:border-[#14A8B6] transition-colors'
+
+const SELECT =
+  'w-full rounded-lg border border-[#27272A] bg-[#0A0A0A] px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#14A8B6]/40 focus:border-[#14A8B6] transition-colors'
 
 interface Props {
   settings: AgencySettings | null
@@ -18,6 +21,7 @@ export function AgenciaForm({ settings }: Props) {
   const [isPending, startTransition] = useTransition()
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [selectedTz, setSelectedTz] = useState(settings?.timezone ?? DEFAULT_TIMEZONE)
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -48,7 +52,6 @@ export function AgenciaForm({ settings }: Props) {
       {/* Info básica */}
       <div className="rounded-xl border border-[#27272A] bg-[#121212] p-6 space-y-5">
         <h3 className="text-sm font-semibold text-white">Información de la agencia</h3>
-
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Nombre de la agencia" required>
             <input
@@ -108,6 +111,31 @@ export function AgenciaForm({ settings }: Props) {
         </div>
       </div>
 
+      {/* Zona horaria */}
+      <div className="rounded-xl border border-[#27272A] bg-[#121212] p-6 space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold text-white">Zona horaria del sistema</h3>
+          <p className="mt-0.5 text-xs text-[#71717A]">
+            Todas las fechas y horas del CRM se mostrarán en esta zona horaria.
+          </p>
+        </div>
+        <Field label="Zona horaria" required>
+          <select
+            name="timezone"
+            value={selectedTz}
+            onChange={(e) => setSelectedTz(e.target.value)}
+            className={SELECT}
+          >
+            {TIMEZONES.map((tz) => (
+              <option key={tz.value} value={tz.value}>
+                {tz.flag}  {tz.label} ({tz.offset})
+              </option>
+            ))}
+          </select>
+        </Field>
+        <LiveClock timezone={selectedTz} />
+      </div>
+
       {/* Redes sociales */}
       <div className="rounded-xl border border-[#27272A] bg-[#121212] p-6 space-y-5">
         <h3 className="text-sm font-semibold text-white">Redes sociales</h3>
@@ -164,6 +192,43 @@ function Field({
         {required && <span className="ml-0.5 text-[#EF4444]">*</span>}
       </label>
       {children}
+    </div>
+  )
+}
+
+function LiveClock({ timezone }: { timezone: string }) {
+  const [now, setNow] = useState(new Date())
+
+  useEffect(() => {
+    setNow(new Date())
+    const id = setInterval(() => setNow(new Date()), 1000)
+    return () => clearInterval(id)
+  }, [timezone])
+
+  const tzData = TIMEZONES.find((t) => t.value === timezone)
+
+  const formatted = new Intl.DateTimeFormat('es', {
+    timeZone: timezone,
+    weekday: 'long',
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  }).format(now)
+
+  return (
+    <div className="flex items-center gap-3 rounded-lg border border-[#14A8B6]/20 bg-[#14A8B6]/5 px-4 py-3">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#14A8B6]/10">
+        <Clock size={15} className="text-[#14A8B6]" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-xs text-[#71717A]">
+          Hora actual — {tzData?.flag} {tzData?.label ?? timezone} ({tzData?.offset})
+        </p>
+        <p className="text-sm font-medium text-white capitalize tabular-nums">{formatted}</p>
+      </div>
     </div>
   )
 }

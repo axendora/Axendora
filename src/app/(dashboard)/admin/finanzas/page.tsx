@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getAgencyTimezone } from '@/lib/timezone'
 import { FinanzasClient } from './_components/finanzas-client'
 import type { Ingreso, Gasto, IngresoCategoria, GastoCategoria } from '@/types/database.types'
 
@@ -6,6 +7,7 @@ export const metadata = { title: 'Finanzas — Axendora Admin' }
 
 export default async function FinanzasPage() {
   const supabase = await createClient()
+  const timezone = await getAgencyTimezone()
 
   const [
     { data: ingresos },
@@ -45,6 +47,7 @@ export default async function FinanzasPage() {
         gastos={(gastos ?? []) as unknown as Gasto[]}
         ingresoCategorias={(ingresoCategorias ?? []) as IngresoCategoria[]}
         gastoCategorias={(gastoCategorias ?? []) as GastoCategoria[]}
+        timezone={timezone}
       />
     </div>
   )

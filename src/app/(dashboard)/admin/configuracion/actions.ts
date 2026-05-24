@@ -20,6 +20,7 @@ export async function updateAgenciaAction(
     website:        (formData.get('website') as string)?.trim() || null,
     instagram:      (formData.get('instagram') as string)?.trim() || null,
     facebook:       (formData.get('facebook') as string)?.trim() || null,
+    timezone:       (formData.get('timezone') as string)?.trim() || 'America/Caracas',
     updated_at:     new Date().toISOString(),
   }
 

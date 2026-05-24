@@ -19,6 +19,7 @@ export type AgencySettings = {
   website: string | null
   instagram: string | null
   facebook: string | null
+  timezone: string
   notif_bienvenida: boolean
   notif_solicitud_aprobada: boolean
   notif_solicitud_rechazada: boolean
@@ -457,6 +458,7 @@ export type Database = {
           website: string | null
           instagram: string | null
           facebook: string | null
+          timezone: string
           notif_bienvenida: boolean
           notif_solicitud_aprobada: boolean
           notif_solicitud_rechazada: boolean
@@ -475,6 +477,7 @@ export type Database = {
           website?: string | null
           instagram?: string | null
           facebook?: string | null
+          timezone?: string
           notif_bienvenida?: boolean
           notif_solicitud_aprobada?: boolean
           notif_solicitud_rechazada?: boolean
@@ -492,6 +495,7 @@ export type Database = {
           website?: string | null
           instagram?: string | null
           facebook?: string | null
+          timezone?: string
           notif_bienvenida?: boolean
           notif_solicitud_aprobada?: boolean
           notif_solicitud_rechazada?: boolean

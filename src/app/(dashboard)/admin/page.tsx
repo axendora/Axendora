@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getAgencyTimezone, formatDate, formatRelative } from '@/lib/timezone'
 import Link from 'next/link'
 import {
   Users,
@@ -15,6 +16,7 @@ import { KpiCard } from '@/components/admin/kpi-card'
 import { SolicitudesTrendChart } from '@/components/admin/solicitudes-trend-chart'
 import { SolicitudesEstadoChart } from '@/components/dashboard/charts/solicitudes-estado-chart'
 
+// timezone helpers now imported from @/lib/timezone
 const estadoConfig: Record<SolicitudEstado, { label: string; className: string }> = {
   abierta:    { label: 'Abierta',    className: 'bg-[#14A8B6]/10 text-[#14A8B6]' },
   en_proceso: { label: 'En proceso', className: 'bg-[#F59E0B]/10 text-[#F59E0B]' },
@@ -34,19 +36,6 @@ const prioridadConfig: Record<SolicitudPrioridad, { label: string; className: st
   alta:  { label: 'Alta',  className: 'text-[#EF4444]' },
 }
 
-function formatDate(iso: string) {
-  return new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short' }).format(new Date(iso))
-}
-
-function relativeTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime()
-  const mins = Math.floor(diff / 60000)
-  if (mins < 1) return 'ahora mismo'
-  if (mins < 60) return `hace ${mins}m`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return `hace ${hours}h`
-  return `hace ${Math.floor(hours / 24)}d`
-}
 
 function getLast6Months() {
   const months = []
@@ -75,6 +64,7 @@ function groupByMonth<T extends { created_at: string }>(
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient()
+  const timezone = await getAgencyTimezone()
 
   const now = new Date()
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
@@ -258,7 +248,7 @@ export default async function AdminDashboardPage() {
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-white">{s.titulo}</p>
                       <p className="text-xs text-[#71717A]">
-                        {tipoLabel[s.tipo as SolicitudTipo]} · {formatDate(s.created_at)}
+                        {tipoLabel[s.tipo as SolicitudTipo]} · {formatDate(s.created_at, timezone, { day: 'numeric', month: 'short' })}
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
@@ -301,7 +291,7 @@ export default async function AdminDashboardPage() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm text-white">{a.titulo}</p>
                     <p className="text-xs text-[#71717A]">
-                      {tipoLabel[a.tipo as SolicitudTipo]} · {relativeTime(a.created_at)}
+                      {tipoLabel[a.tipo as SolicitudTipo]} · {formatRelative(a.created_at, timezone)}
                     </p>
                   </div>
                 </div>

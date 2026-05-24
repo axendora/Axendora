@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS agency_settings (
   website text,
   instagram text,
   facebook text,
+  -- Zona horaria del sistema
+  timezone text NOT NULL DEFAULT 'America/Caracas',
   -- Preferencias de notificaciones por email
   notif_bienvenida boolean NOT NULL DEFAULT true,
   notif_solicitud_aprobada boolean NOT NULL DEFAULT true,

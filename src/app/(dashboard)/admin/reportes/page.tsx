@@ -1,16 +1,17 @@
 import { createClient } from '@/lib/supabase/server'
+import { getAgencyTimezone, toLocalMonthKey, formatShortMonth } from '@/lib/timezone'
 import { SolicitudesEstadoChart } from '@/components/dashboard/charts/solicitudes-estado-chart'
 import { SolicitudesMesChart } from '@/components/dashboard/charts/solicitudes-mes-chart'
 import { ClientesMesChart } from '@/components/dashboard/charts/clientes-mes-chart'
 import { SolicitudesTipoChart } from '@/components/dashboard/charts/solicitudes-tipo-chart'
 
-function getLast6Months(): { key: string; label: string }[] {
+function getLast6Months(tz: string): { key: string; label: string }[] {
   const months = []
   const now = new Date()
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-    const label = d.toLocaleDateString('es', { month: 'short', year: '2-digit' })
+    const key = toLocalMonthKey(d, tz)
+    const label = formatShortMonth(d, tz)
     months.push({ key, label })
   }
   return months
@@ -19,11 +20,11 @@ function getLast6Months(): { key: string; label: string }[] {
 function groupByMonth<T extends { created_at: string }>(
   items: T[],
   months: { key: string; label: string }[],
+  tz: string,
 ): { mes: string; total: number }[] {
   const counts: Record<string, number> = {}
   for (const item of items) {
-    const d = new Date(item.created_at)
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    const key = toLocalMonthKey(item.created_at, tz)
     counts[key] = (counts[key] ?? 0) + 1
   }
   return months.map(({ key, label }) => ({ mes: label, total: counts[key] ?? 0 }))
@@ -31,7 +32,8 @@ function groupByMonth<T extends { created_at: string }>(
 
 export default async function AdminReportesPage() {
   const supabase = await createClient()
-  const months = getLast6Months()
+  const timezone = await getAgencyTimezone()
+  const months = getLast6Months(timezone)
   const sixMonthsAgo = new Date()
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
   const since = sixMonthsAgo.toISOString()
@@ -79,12 +81,12 @@ export default async function AdminReportesPage() {
   }))
 
   // Solicitudes por mes
-  const solicitudesMes = groupByMonth(solicitudesRecientes ?? [], months).map(
+  const solicitudesMes = groupByMonth(solicitudesRecientes ?? [], months, timezone).map(
     ({ mes, total }) => ({ mes, total }),
   )
 
   // Clientes por mes
-  const clientesMes = groupByMonth(clientesRecientes ?? [], months).map(
+  const clientesMes = groupByMonth(clientesRecientes ?? [], months, timezone).map(
     ({ mes, total }) => ({ mes, clientes: total }),
   )
 

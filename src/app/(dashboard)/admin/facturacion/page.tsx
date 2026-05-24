@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getAgencyTimezone, formatDate as tzFormatDate } from '@/lib/timezone'
 import Link from 'next/link'
 import { Receipt, Plus, CalendarDays, AlertTriangle, CheckCircle2, Clock, Ban } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -41,9 +42,9 @@ function formatMonto(monto: number, moneda: MonedaTipo) {
   return `$ ${monto.toLocaleString('es-CO', { maximumFractionDigits: 0 })} COP`
 }
 
-function formatDate(date: string | null) {
+function formatDate(date: string | null, tz: string) {
   if (!date) return '—'
-  return new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(date))
+  return tzFormatDate(date, tz, { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 const FILTROS: { value: FacturaEstado | 'todos'; label: string }[] = [
@@ -61,6 +62,7 @@ export default async function AdminFacturacionPage({
 }) {
   const { estado: filtroEstado } = await searchParams
   const supabase = await createClient()
+  const timezone = await getAgencyTimezone()
 
   const { data: raw } = await supabase
     .from('facturas')
@@ -205,18 +207,18 @@ export default async function AdminFacturacionPage({
                     <div className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-muted-foreground sm:flex-col sm:gap-y-0.5">
                       <span className="flex items-center gap-1">
                         <CalendarDays size={10} />
-                        Emitida {formatDate(f.fecha_emision)}
+                        Emitida {formatDate(f.fecha_emision, timezone)}
                       </span>
                       {f.fecha_vencimiento && (
                         <span className={cn('flex items-center gap-1', f.estado === 'vencida' && 'text-destructive')}>
                           <CalendarDays size={10} />
-                          Vence {formatDate(f.fecha_vencimiento)}
+                          Vence {formatDate(f.fecha_vencimiento, timezone)}
                         </span>
                       )}
                       {f.fecha_pago && (
                         <span className="flex items-center gap-1 text-success">
                           <CheckCircle2 size={10} />
-                          Pagada {formatDate(f.fecha_pago)}
+                          Pagada {formatDate(f.fecha_pago, timezone)}
                         </span>
                       )}
                     </div>

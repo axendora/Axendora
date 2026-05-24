@@ -10,6 +10,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { eliminarIngresoAction, eliminarGastoAction } from '../actions'
 import { EntradaModal } from './entrada-modal'
 import { CatIcon } from './icon-map'
+import { toLocalDateKey, formatDate, formatDateTime } from '@/lib/timezone'
 import type { Ingreso, Gasto, IngresoCategoria, GastoCategoria } from '@/types/database.types'
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
@@ -24,44 +25,42 @@ const PERIODOS: { value: Periodo; label: string }[] = [
   { value: 'todo',   label: 'Todo'        },
 ]
 
-// ── Date helpers (string-based — avoids timezone drift) ──────────────────────
-function pad(n: number) { return String(n).padStart(2, '0') }
-
-function localDateStr(d: Date): string {
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+// ── Date helpers (timezone-aware) ─────────────────────────────────────────────
+function todayInTz(tz: string)     { return toLocalDateKey(new Date(), tz) }
+function yesterdayInTz(tz: string) {
+  const d = new Date(); d.setDate(d.getDate() - 1); return toLocalDateKey(d, tz)
 }
-
-function toDateStr(iso: string): string {
-  // Works for "2026-05-24" and "2026-05-24T12:00:00Z" etc.
-  return iso.slice(0, 10)
-}
-
-function todayStr()     { return localDateStr(new Date()) }
-function yesterdayStr() { const d = new Date(); d.setDate(d.getDate() - 1); return localDateStr(d) }
-function startOfWeekStr() {
+function startOfWeekInTz(tz: string) {
   const d = new Date()
-  d.setDate(d.getDate() - d.getDay())
-  return localDateStr(d)
+  const day = parseInt(
+    new Intl.DateTimeFormat('en-US', { timeZone: tz, weekday: 'short' }).format(d) === 'Sun' ? '0'
+    : new Intl.DateTimeFormat('en-US', { timeZone: tz, weekday: 'short' }).format(d) === 'Mon' ? '1'
+    : new Intl.DateTimeFormat('en-US', { timeZone: tz, weekday: 'short' }).format(d) === 'Tue' ? '2'
+    : new Intl.DateTimeFormat('en-US', { timeZone: tz, weekday: 'short' }).format(d) === 'Wed' ? '3'
+    : new Intl.DateTimeFormat('en-US', { timeZone: tz, weekday: 'short' }).format(d) === 'Thu' ? '4'
+    : new Intl.DateTimeFormat('en-US', { timeZone: tz, weekday: 'short' }).format(d) === 'Fri' ? '5' : '6'
+  )
+  d.setDate(d.getDate() - day)
+  return toLocalDateKey(d, tz)
 }
-function startOfMonthStr() {
-  const n = new Date()
-  return `${n.getFullYear()}-${pad(n.getMonth() + 1)}-01`
+function startOfMonthInTz(tz: string) {
+  return todayInTz(tz).slice(0, 8) + '01'
 }
 
-function isInPeriodo(fecha: string, periodo: Periodo): boolean {
-  const d = toDateStr(fecha)
-  const today = todayStr()
+function isInPeriodo(fecha: string, periodo: Periodo, tz: string): boolean {
+  const d     = fecha.slice(0, 10)
+  const today = todayInTz(tz)
   switch (periodo) {
     case 'hoy':    return d === today
-    case 'ayer':   return d === yesterdayStr()
-    case 'semana': return d >= startOfWeekStr() && d <= today
-    case 'mes':    return d >= startOfMonthStr() && d <= today
+    case 'ayer':   return d === yesterdayInTz(tz)
+    case 'semana': return d >= startOfWeekInTz(tz) && d <= today
+    case 'mes':    return d >= startOfMonthInTz(tz) && d <= today
     default:       return true
   }
 }
 
 function isInRango(fecha: string, desde: string, hasta: string): boolean {
-  const d = toDateStr(fecha)
+  const d = fecha.slice(0, 10)
   if (desde && hasta) return d >= desde && d <= hasta
   if (desde) return d >= desde
   if (hasta) return d <= hasta
@@ -69,17 +68,21 @@ function isInRango(fecha: string, desde: string, hasta: string): boolean {
 }
 
 // ── Formatters ────────────────────────────────────────────────────────────────
-function formatFecha(iso: string) {
-  // Parse as local date to avoid UTC offset display issues
-  const [y, m, day] = iso.slice(0, 10).split('-').map(Number)
-  const d    = new Date(y, m - 1, day)
-  const fecha = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', year: 'numeric' }).format(d)
-  // Time part (only meaningful if the iso string contains time)
+function formatFecha(iso: string, tz: string) {
   const hasTime = iso.length > 10
-  const hora  = hasTime
-    ? new Intl.DateTimeFormat('es', { hour: '2-digit', minute: '2-digit' }).format(new Date(iso))
-    : ''
-  return { fecha, hora }
+  if (hasTime) {
+    return {
+      fecha: formatDate(iso, tz, { day: 'numeric', month: 'short', year: 'numeric' }),
+      hora:  formatDateTime(iso, tz).split(',')[1]?.trim() ?? '',
+    }
+  }
+  // date-only: parse as local date to avoid UTC shift
+  const [y, m, day] = iso.slice(0, 10).split('-').map(Number)
+  const d = new Date(y, m - 1, day)
+  return {
+    fecha: formatDate(d, tz, { day: 'numeric', month: 'short', year: 'numeric' }),
+    hora:  '',
+  }
 }
 
 function formatUSD(n: number) {
@@ -92,6 +95,7 @@ interface Props {
   gastos:            Gasto[]
   ingresoCategorias: IngresoCategoria[]
   gastoCategorias:   GastoCategoria[]
+  timezone:          string
 }
 
 // ─── Delete btn ───────────────────────────────────────────────────────────────
@@ -121,7 +125,7 @@ function DeleteBtn({ id, tipo }: { id: string; tipo: Tab }) {
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
-export function FinanzasClient({ ingresos, gastos, ingresoCategorias, gastoCategorias }: Props) {
+export function FinanzasClient({ ingresos, gastos, ingresoCategorias, gastoCategorias, timezone }: Props) {
   const [tab, setTab]                   = useState<Tab>('ingresos')
   const [periodo, setPeriodo]           = useState<Periodo>('mes')
   const [modoRango, setModoRango]       = useState(false)
@@ -134,24 +138,24 @@ export function FinanzasClient({ ingresos, gastos, ingresoCategorias, gastoCateg
   // ── Filtering ──────────────────────────────────────────────────────────────
   function matchesFecha(fecha: string): boolean {
     if (modoRango) return isInRango(fecha, rangoDesde, rangoHasta)
-    return isInPeriodo(fecha, periodo)
+    return isInPeriodo(fecha, periodo, timezone)
   }
 
   const ingresosFiltrados = useMemo(() => ingresos.filter((i) =>
     matchesFecha(i.fecha) && (categoriaFiltro === 'todas' || i.categoria_id === categoriaFiltro)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  ), [ingresos, periodo, modoRango, rangoDesde, rangoHasta, categoriaFiltro])
+  ), [ingresos, periodo, modoRango, rangoDesde, rangoHasta, categoriaFiltro, timezone])
 
   const gastosFiltrados = useMemo(() => gastos.filter((g) =>
     matchesFecha(g.fecha) && (categoriaFiltro === 'todas' || g.categoria_id === categoriaFiltro)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  ), [gastos, periodo, modoRango, rangoDesde, rangoHasta, categoriaFiltro])
+  ), [gastos, periodo, modoRango, rangoDesde, rangoHasta, categoriaFiltro, timezone])
 
   // ── Summary cards (always Este mes, independent of filters) ───────────────
-  const startMes = startOfMonthStr()
-  const today    = todayStr()
-  const totalIngresosMes = ingresos.filter(i => toDateStr(i.fecha) >= startMes && toDateStr(i.fecha) <= today).reduce((s, i) => s + i.monto, 0)
-  const totalGastosMes   = gastos.filter(g => toDateStr(g.fecha) >= startMes && toDateStr(g.fecha) <= today).reduce((s, g) => s + g.monto, 0)
+  const startMes = startOfMonthInTz(timezone)
+  const today    = todayInTz(timezone)
+  const totalIngresosMes = ingresos.filter(i => i.fecha.slice(0, 10) >= startMes && i.fecha.slice(0, 10) <= today).reduce((s, i) => s + i.monto, 0)
+  const totalGastosMes   = gastos.filter(g => g.fecha.slice(0, 10) >= startMes && g.fecha.slice(0, 10) <= today).reduce((s, g) => s + g.monto, 0)
   const balanceMes       = totalIngresosMes - totalGastosMes
 
   const lista        = tab === 'ingresos' ? ingresosFiltrados : gastosFiltrados
@@ -403,7 +407,7 @@ export function FinanzasClient({ ingresos, gastos, ingresoCategorias, gastoCateg
           <div className="divide-y divide-border">
             {lista.map((entry) => {
               const cat = entry.categoria
-              const { fecha, hora } = formatFecha(entry.fecha)
+              const { fecha, hora } = formatFecha(entry.fecha, timezone)
               return (
                 <div key={entry.id} className="flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-muted/20">
                   <div
