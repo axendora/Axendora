@@ -7,6 +7,7 @@ export type PlanCategoria = 'marketing' | 'diseno' | 'web'
 export type TipoPrecio = 'mensual' | 'unico'
 export type FacturaEstado = 'pendiente' | 'pagada' | 'vencida' | 'cancelada'
 export type MonedaTipo = 'USD' | 'COP'
+export type TipoDescuento = 'porcentaje' | 'monto_fijo'
 
 // ── Agency Settings ────────────────────────────────────────
 export type AgencySettings = {
@@ -71,6 +72,23 @@ export type Gasto = {
   fecha: string
   created_at: string
   categoria?: GastoCategoria | null
+}
+
+export type Oferta = {
+  id: string
+  titulo: string
+  descripcion: string | null
+  tipo_descuento: TipoDescuento
+  valor_descuento: number
+  moneda: MonedaTipo
+  codigo_promo: string | null
+  plan_id: string | null
+  fecha_inicio: string
+  fecha_fin: string | null
+  activo: boolean
+  created_at: string
+  updated_at: string
+  plan?: { id: string; nombre: string; categoria: PlanCategoria } | null
 }
 
 export type Database = {
@@ -444,6 +462,52 @@ export type Database = {
           monto?: number
           categoria_id?: string | null
           fecha?: string
+        }
+        Relationships: []
+      }
+      ofertas: {
+        Row: {
+          id: string
+          titulo: string
+          descripcion: string | null
+          tipo_descuento: TipoDescuento
+          valor_descuento: number
+          moneda: MonedaTipo
+          codigo_promo: string | null
+          plan_id: string | null
+          fecha_inicio: string
+          fecha_fin: string | null
+          activo: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          titulo: string
+          descripcion?: string | null
+          tipo_descuento?: TipoDescuento
+          valor_descuento: number
+          moneda?: MonedaTipo
+          codigo_promo?: string | null
+          plan_id?: string | null
+          fecha_inicio?: string
+          fecha_fin?: string | null
+          activo?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          titulo?: string
+          descripcion?: string | null
+          tipo_descuento?: TipoDescuento
+          valor_descuento?: number
+          moneda?: MonedaTipo
+          codigo_promo?: string | null
+          plan_id?: string | null
+          fecha_inicio?: string
+          fecha_fin?: string | null
+          activo?: boolean
+          updated_at?: string
         }
         Relationships: []
       }
