@@ -90,7 +90,9 @@ export function RequestSuccessModal({
   const waMsg = waMsgOverride ||
     `Hola Axendora, soy ${clientName}. Acabo de solicitar el plan "${planNombre}"${diasTxt}${ofertaTxt}. ` +
     `Quisiera coordinar el inicio del servicio. ¡Gracias!`
-  const waLink = whatsapp ? buildWhatsAppLink(whatsapp, waMsg) : null
+  const waLink = whatsapp
+    ? buildWhatsAppLink(whatsapp, waMsg)
+    : `https://wa.me/?text=${encodeURIComponent(waMsg)}`
 
   return (
     <div
@@ -141,36 +143,28 @@ export function RequestSuccessModal({
             </div>
           )}
 
-          {waLink ? (
-            <>
-              <div className="mt-6 w-full rounded-xl border border-[#25D366]/30 bg-[#25D366]/5 p-4 text-left">
-                <div className="flex items-start gap-2.5">
-                  <MessageCircleHeart size={16} className="mt-0.5 shrink-0 text-[#25D366]" />
-                  <p className="text-xs text-muted-foreground">
-                    ¿Quieres adelantar el contacto? Escríbenos directamente por WhatsApp con un
-                    mensaje ya preparado.
-                  </p>
-                </div>
-              </div>
+          <div className="mt-6 w-full rounded-xl border border-[#25D366]/30 bg-[#25D366]/5 p-4 text-left">
+            <div className="flex items-start gap-2.5">
+              <MessageCircleHeart size={16} className="mt-0.5 shrink-0 text-[#25D366]" />
+              <p className="text-xs text-muted-foreground">
+                ¿Quieres adelantar el contacto? Escríbenos directamente por WhatsApp con un
+                mensaje ya preparado.
+              </p>
+            </div>
+          </div>
 
-              <a
-                href={waLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={cn(
-                  buttonVariants({ size: 'lg' }),
-                  'mt-4 w-full gap-2 bg-[#25D366] border-[#25D366] text-black hover:bg-[#25D366]/90',
-                )}
-              >
-                <WhatsAppIcon size={18} />
-                Contactar por WhatsApp
-              </a>
-            </>
-          ) : (
-            <p className="mt-6 text-xs text-muted-foreground">
-              Te contactaremos pronto desde el panel.
-            </p>
-          )}
+          <a
+            href={waLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn(
+              buttonVariants({ size: 'lg' }),
+              'mt-4 w-full gap-2 bg-[#25D366] border-[#25D366] text-black hover:bg-[#25D366]/90',
+            )}
+          >
+            <WhatsAppIcon size={18} />
+            Contactar por WhatsApp
+          </a>
 
           <div className="mt-3 flex w-full gap-2">
             <Link
