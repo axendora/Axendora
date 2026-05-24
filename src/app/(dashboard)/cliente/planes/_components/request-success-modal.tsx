@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { CheckCircle2, X, MessageCircleHeart } from 'lucide-react'
+import { CheckCircle2, X, MessageCircleHeart, Tag } from 'lucide-react'
 import confetti from 'canvas-confetti'
 import { WhatsAppIcon } from '@/components/icons/whatsapp-icon'
 import { buildWhatsAppLink } from '@/lib/plans'
@@ -14,6 +14,7 @@ interface RequestSuccessModalProps {
   onClose: () => void
   planNombre: string
   duracionDias: number | null
+  ofertaTitulo?: string
   clientName: string
   whatsapp: string | null
 }
@@ -56,6 +57,7 @@ export function RequestSuccessModal({
   onClose,
   planNombre,
   duracionDias,
+  ofertaTitulo,
   clientName,
   whatsapp,
 }: RequestSuccessModalProps) {
@@ -82,8 +84,9 @@ export function RequestSuccessModal({
   if (!open) return null
 
   const diasTxt = duracionDias ? ` por ${duracionDias} días` : ''
+  const ofertaTxt = ofertaTitulo ? ` (con oferta: ${ofertaTitulo})` : ''
   const waMsg =
-    `Hola Axendora, soy ${clientName}. Acabo de solicitar el plan "${planNombre}"${diasTxt}. ` +
+    `Hola Axendora, soy ${clientName}. Acabo de solicitar el plan "${planNombre}"${diasTxt}${ofertaTxt}. ` +
     `Quisiera coordinar el inicio del servicio. ¡Gracias!`
   const waLink = whatsapp ? buildWhatsAppLink(whatsapp, waMsg) : null
 
@@ -127,6 +130,14 @@ export function RequestSuccessModal({
             ) : null}{' '}
             ya está en nuestro panel. El equipo de Axendora la revisará en breve.
           </p>
+
+          {/* Oferta aplicada */}
+          {ofertaTitulo && (
+            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-success/10 px-3 py-1.5 text-xs font-medium text-success">
+              <Tag size={11} />
+              Descuento aplicado: {ofertaTitulo}
+            </div>
+          )}
 
           {waLink ? (
             <>

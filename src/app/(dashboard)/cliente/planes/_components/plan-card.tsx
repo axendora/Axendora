@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState } from 'react'
 import { useFormStatus } from 'react-dom'
-import { Star, Loader2, Send } from 'lucide-react'
+import { Star, Loader2, Send, Tag } from 'lucide-react'
 import { Layers } from 'lucide-react'
 import { WhatsAppIcon } from '@/components/icons/whatsapp-icon'
 import { getServiceIcon } from '@/lib/service-icons'
@@ -12,6 +12,7 @@ import { RequestSuccessModal } from './request-success-modal'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
 import type { PlanCategoria, TipoPrecio } from '@/types/database.types'
+import type { OfertaActiva } from '../page'
 
 type Plan = {
   id: string
@@ -26,6 +27,34 @@ type Plan = {
   destacado: boolean
 }
 
+// ── Helpers de descuento ──────────────────────────────────────────────────────
+
+function calcUSD(precio: number | null, oferta: OfertaActiva): number | null {
+  if (precio == null) return null
+  if (oferta.tipo_descuento === 'porcentaje') {
+    return Math.round(precio * (1 - oferta.valor_descuento / 100))
+  }
+  if (oferta.moneda === 'USD') return Math.max(0, Math.round((precio - oferta.valor_descuento) * 100) / 100)
+  return precio
+}
+
+function calcCOP(precio: number | null, oferta: OfertaActiva): number | null {
+  if (precio == null) return null
+  if (oferta.tipo_descuento === 'porcentaje') {
+    return Math.round(precio * (1 - oferta.valor_descuento / 100))
+  }
+  if (oferta.moneda === 'COP') return Math.max(0, Math.round(precio - oferta.valor_descuento))
+  return precio
+}
+
+function badgeLabel(oferta: OfertaActiva): string {
+  if (oferta.tipo_descuento === 'porcentaje') return `−${oferta.valor_descuento}%`
+  if (oferta.moneda === 'USD') return `−$${oferta.valor_descuento} USD`
+  return `−$${oferta.valor_descuento.toLocaleString('es-CO', { maximumFractionDigits: 0 })} COP`
+}
+
+// ── Submit button ─────────────────────────────────────────────────────────────
+
 function ContratarButton() {
   const { pending } = useFormStatus()
   return (
@@ -37,19 +66,30 @@ function ContratarButton() {
   )
 }
 
+// ── Component ─────────────────────────────────────────────────────────────────
+
 interface PlanCardProps {
   plan: Plan
+  oferta: OfertaActiva | null
   whatsapp: string | null
   clientName: string
 }
 
-export function PlanCard({ plan, whatsapp, clientName }: PlanCardProps) {
+export function PlanCard({ plan, oferta, whatsapp, clientName }: PlanCardProps) {
   const [state, formAction] = useActionState<SolicitarPlanState, FormData>(solicitarPlanAction, null)
   const [modalOpen, setModalOpen] = useState(false)
 
   const PlanIcon = getServiceIcon(plan.icono)
   const usd = formatUSD(plan.precio_usd)
   const cop = formatCOP(plan.precio_cop)
+
+  // Precios con descuento
+  const usdRawDesc = oferta ? calcUSD(plan.precio_usd, oferta) : plan.precio_usd
+  const copRawDesc = oferta ? calcCOP(plan.precio_cop, oferta) : plan.precio_cop
+  const usdDesc    = oferta ? formatUSD(usdRawDesc) : null
+  const copDesc    = oferta ? formatCOP(copRawDesc) : null
+  const usdCambio  = oferta !== null && usdRawDesc !== plan.precio_usd
+  const copCambio  = oferta !== null && copRawDesc !== plan.precio_cop
 
   const waMsg = `Hola Axendora, me interesa el plan "${plan.nombre}". ¿Me puedes dar más información?`
   const waLink = whatsapp ? buildWhatsAppLink(whatsapp, waMsg) : null
@@ -79,10 +119,19 @@ export function PlanCard({ plan, whatsapp, clientName }: PlanCardProps) {
               <Layers size={48} className="text-muted-foreground/20" />
             </div>
           )}
+
+          {/* Badge: MÁS POPULAR (top-left) */}
           {plan.destacado && (
             <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-warning/95 px-2.5 py-1 text-[10px] font-bold text-black">
               <Star size={11} fill="black" />
               MÁS POPULAR
+            </div>
+          )}
+
+          {/* Badge: Descuento (top-right) */}
+          {oferta && (
+            <div className="absolute right-2 top-2 rounded-full bg-success px-2.5 py-1 text-[10px] font-bold text-white shadow-sm">
+              {badgeLabel(oferta)}
             </div>
           )}
         </div>
@@ -98,27 +147,61 @@ export function PlanCard({ plan, whatsapp, clientName }: PlanCardProps) {
             <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{plan.descripcion}</p>
           )}
 
-          {/* Price */}
+          {/* Precio */}
           <div className="mt-4 space-y-1 border-t border-border pt-4">
             {usd ? (
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-2xl font-bold text-primary">{usd}</span>
-                <span className="text-xs text-muted-foreground">
-                  {plan.tipo_precio === 'mensual' ? 'USD / mes' : 'USD único'}
-                </span>
-              </div>
+              usdCambio ? (
+                <div className="space-y-0.5">
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-2xl font-bold text-success">{usdDesc}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {plan.tipo_precio === 'mensual' ? 'USD / mes' : 'USD único'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground/60 line-through">{usd}</p>
+                </div>
+              ) : (
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl font-bold text-primary">{usd}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {plan.tipo_precio === 'mensual' ? 'USD / mes' : 'USD único'}
+                  </span>
+                </div>
+              )
             ) : (
               <p className="text-sm font-medium text-muted-foreground">Cotizar</p>
             )}
+
             {cop && (
-              <p className="text-xs text-muted-foreground">
-                {cop} {plan.tipo_precio === 'mensual' ? '/ mes' : 'único'}
-              </p>
+              copCambio ? (
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground/80">
+                    {copDesc} {plan.tipo_precio === 'mensual' ? '/ mes' : 'único'}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground/40 line-through">
+                    {cop}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  {cop} {plan.tipo_precio === 'mensual' ? '/ mes' : 'único'}
+                </p>
+              )
+            )}
+
+            {/* Código promo */}
+            {oferta?.codigo_promo && (
+              <div className="pt-1">
+                <span className="inline-flex items-center gap-1 rounded bg-primary/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-primary">
+                  <Tag size={9} />
+                  {oferta.codigo_promo}
+                </span>
+              </div>
             )}
           </div>
 
           {errorState && (
-            <p className="mt-3 rounded-lg border border-error/30 bg-error/10 px-3 py-2 text-xs text-error">
+            <p className="mt-3 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
               {errorState.error}
             </p>
           )}
@@ -127,6 +210,7 @@ export function PlanCard({ plan, whatsapp, clientName }: PlanCardProps) {
           <div className="mt-4 flex items-center gap-2">
             <form action={formAction} className="flex flex-1">
               <input type="hidden" name="plan_id" value={plan.id} />
+              {oferta && <input type="hidden" name="oferta_id" value={oferta.id} />}
               <ContratarButton />
             </form>
             {waLink && (
@@ -150,6 +234,7 @@ export function PlanCard({ plan, whatsapp, clientName }: PlanCardProps) {
           onClose={() => setModalOpen(false)}
           planNombre={successState.planNombre}
           duracionDias={successState.duracionDias}
+          ofertaTitulo={successState.ofertaTitulo}
           clientName={clientName}
           whatsapp={whatsapp}
         />

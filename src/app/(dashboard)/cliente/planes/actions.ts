@@ -6,13 +6,14 @@ import { revalidatePath } from 'next/cache'
 export type SolicitarPlanState =
   | null
   | { error: string }
-  | { success: true; planNombre: string; duracionDias: number | null }
+  | { success: true; planNombre: string; duracionDias: number | null; ofertaTitulo?: string }
 
 export async function solicitarPlanAction(
   _: SolicitarPlanState,
   formData: FormData,
 ): Promise<SolicitarPlanState> {
-  const plan_id = formData.get('plan_id') as string
+  const plan_id    = formData.get('plan_id') as string
+  const oferta_id  = formData.get('oferta_id') as string | null
   if (!plan_id) return { error: 'Plan no especificado' }
 
   const supabase = await createClient()
@@ -28,17 +29,38 @@ export async function solicitarPlanAction(
   if (planErr) return { error: `Error al buscar el plan: ${planErr.message}` }
   if (!plan)   return { error: 'Plan no encontrado' }
 
-  const tipoLabel = plan.tipo_precio === 'mensual' ? 'recurrente mensual' : 'pago único'
-  const duracionTxt = plan.duracion_dias
-    ? ` Duración por defecto: ${plan.duracion_dias} días.`
-    : ''
+  // Resolver oferta aplicada (si la hay)
+  let ofertaLinea = ''
+  let ofertaTitulo: string | undefined
+
+  if (oferta_id) {
+    const { data: oferta } = await supabase
+      .from('ofertas')
+      .select('titulo, tipo_descuento, valor_descuento, moneda, codigo_promo')
+      .eq('id', oferta_id)
+      .eq('activo', true)
+      .single()
+
+    if (oferta) {
+      const descuento =
+        oferta.tipo_descuento === 'porcentaje'
+          ? `${oferta.valor_descuento}% de descuento`
+          : `$${oferta.valor_descuento} ${oferta.moneda} de descuento`
+      const codigo = oferta.codigo_promo ? ` (código: ${oferta.codigo_promo})` : ''
+      ofertaLinea  = ` Con oferta aplicada: "${oferta.titulo}" — ${descuento}${codigo}.`
+      ofertaTitulo = oferta.titulo
+    }
+  }
+
+  const tipoLabel  = plan.tipo_precio === 'mensual' ? 'recurrente mensual' : 'pago único'
+  const duracionTxt = plan.duracion_dias ? ` Duración por defecto: ${plan.duracion_dias} días.` : ''
 
   const { error } = await supabase
     .from('solicitudes')
     .insert({
       client_id:   user.id,
       titulo:      `Contratación: ${plan.nombre}`,
-      descripcion: `Solicitud de contratación del plan "${plan.nombre}" (${tipoLabel}).${duracionTxt} El equipo de Axendora se pondrá en contacto contigo para coordinar el inicio del servicio.`,
+      descripcion: `Solicitud de contratación del plan "${plan.nombre}" (${tipoLabel}).${duracionTxt}${ofertaLinea} El equipo de Axendora se pondrá en contacto contigo para coordinar el inicio del servicio.`,
       tipo:        'plan',
       estado:      'abierta',
       prioridad:   'media',
@@ -51,8 +73,9 @@ export async function solicitarPlanAction(
   revalidatePath('/admin/solicitudes')
 
   return {
-    success: true,
-    planNombre: plan.nombre,
+    success:      true,
+    planNombre:   plan.nombre,
     duracionDias: plan.duracion_dias,
+    ofertaTitulo,
   }
 }
