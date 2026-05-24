@@ -5,6 +5,8 @@ export type SolicitudTipo = 'soporte' | 'consulta' | 'cambio' | 'plan' | 'otro'
 export type SolicitudPrioridad = 'baja' | 'media' | 'alta'
 export type PlanCategoria = 'marketing' | 'diseno' | 'web'
 export type TipoPrecio = 'mensual' | 'unico'
+export type FacturaEstado = 'pendiente' | 'pagada' | 'vencida' | 'cancelada'
+export type MonedaTipo = 'USD' | 'COP'
 
 export type Database = {
   public: {
@@ -214,6 +216,53 @@ export type Database = {
           duracion_dias?: number | null
           destacado?: boolean
           activo?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      facturas: {
+        Row: {
+          id: string
+          client_id: string
+          client_service_id: string | null
+          numero: string
+          concepto: string
+          monto: number
+          moneda: MonedaTipo
+          estado: FacturaEstado
+          fecha_emision: string
+          fecha_vencimiento: string | null
+          fecha_pago: string | null
+          notas: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          client_id: string
+          client_service_id?: string | null
+          numero: string
+          concepto: string
+          monto: number
+          moneda?: MonedaTipo
+          estado?: FacturaEstado
+          fecha_emision?: string
+          fecha_vencimiento?: string | null
+          fecha_pago?: string | null
+          notas?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          client_service_id?: string | null
+          concepto?: string
+          monto?: number
+          moneda?: MonedaTipo
+          estado?: FacturaEstado
+          fecha_emision?: string
+          fecha_vencimiento?: string | null
+          fecha_pago?: string | null
+          notas?: string | null
           updated_at?: string
         }
         Relationships: []
