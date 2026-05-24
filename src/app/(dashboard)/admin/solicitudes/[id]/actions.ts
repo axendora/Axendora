@@ -39,18 +39,14 @@ export async function aprobarSolicitudAction(
 
   if (fetchErr || !solicitud) return { error: 'Solicitud no encontrada' }
 
-  const hoy = new Date()
-  const fecha_inicio = hoy.toISOString().split('T')[0]
-  const fecha_fin = duracion
-    ? new Date(hoy.getTime() + duracion * 86_400_000).toISOString().split('T')[0]
-    : null
-
+  // Aprobar = aceptar gestionar. La campaña queda EN CONFIGURACIÓN
+  // sin fechas. El countdown empieza cuando el admin la ACTIVE desde
+  // la sección Campañas (ahí se setean fecha_inicio y fecha_fin).
   const { error: csErr } = await supabase.from('client_services').insert({
     client_id: solicitud.client_id,
     plan_id,
     estado: 'en_configuracion',
-    fecha_inicio,
-    fecha_fin,
+    duracion_dias: duracion,
   })
 
   if (csErr) return { error: csErr.message }
@@ -64,6 +60,7 @@ export async function aprobarSolicitudAction(
 
   revalidatePath(`/admin/solicitudes/${id}`)
   revalidatePath('/admin/solicitudes')
+  revalidatePath('/admin/campanas')
   revalidatePath('/admin')
   return {}
 }

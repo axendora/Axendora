@@ -13,6 +13,7 @@ type CampanaRow = {
   estado: ServiceEstado
   fecha_inicio: string | null
   fecha_fin: string | null
+  duracion_dias: number | null
   notas: string | null
   plans: {
     nombre: string
@@ -43,7 +44,7 @@ export default async function CampanasPage() {
 
   const { data: campanasRaw } = await supabase
     .from('client_services')
-    .select('id, estado, fecha_inicio, fecha_fin, notas, plans(nombre, descripcion, categoria, imagen_url)')
+    .select('id, estado, fecha_inicio, fecha_fin, duracion_dias, notas, plans(nombre, descripcion, categoria, imagen_url)')
     .eq('client_id', user.id)
     .not('plan_id', 'is', null)
     .order('created_at', { ascending: false })
@@ -180,10 +181,14 @@ export default async function CampanasPage() {
                     <div className="mt-4 rounded-xl border border-warning/30 bg-warning/5 p-3">
                       <div className="flex items-start gap-2 text-xs">
                         <Hourglass size={13} className="mt-0.5 shrink-0 text-warning" />
-                        <p className="text-muted-foreground">
-                          El equipo está preparando tu campaña. El conteo iniciará cuando
-                          se active.
-                        </p>
+                        <div className="text-muted-foreground">
+                          <p className="font-medium text-foreground/90">Tu solicitud fue aprobada.</p>
+                          <p className="mt-0.5">
+                            El equipo de Axendora está configurando tu campaña.
+                            Cuando esté lista verás aquí el countdown
+                            {c.duracion_dias ? ` de ${c.duracion_dias} días` : ''} corriendo en vivo.
+                          </p>
+                        </div>
                       </div>
                     </div>
                   )}

@@ -11,7 +11,7 @@ import {
   BarChart2,
   FileText,
   DollarSign,
-  Headphones,
+  MessageSquare,
   UserCircle,
   LogOut,
   X,
@@ -41,7 +41,7 @@ const NAV_GROUPS = [
     label: 'Cuenta',
     items: [
       { href: '/cliente/facturas',     label: 'Facturas',   icon: DollarSign,  exact: false },
-      { href: '/cliente/solicitudes',  label: 'Soporte',    icon: Headphones,  exact: false },
+      { href: '/cliente/solicitudes',  label: 'Solicitudes', icon: MessageSquare, exact: false },
       { href: '/cliente/perfil',       label: 'Mi perfil',  icon: UserCircle,  exact: false },
     ],
   },

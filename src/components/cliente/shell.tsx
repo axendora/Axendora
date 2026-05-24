@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Package, Headphones, Sparkles } from 'lucide-react'
+import { LayoutDashboard, Package, MessageSquare, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ClienteSidebar } from './sidebar'
 import { ClienteTopbar } from './topbar'
@@ -11,7 +11,7 @@ import { ClienteTopbar } from './topbar'
 const BOTTOM_NAV = [
   { href: '/cliente',          label: 'Inicio',    icon: LayoutDashboard, exact: true  },
   { href: '/cliente/servicios', label: 'Servicios', icon: Package,         exact: false },
-  { href: '/cliente/solicitudes', label: 'Soporte',  icon: Headphones,      exact: false },
+  { href: '/cliente/solicitudes', label: 'Solicitudes',  icon: MessageSquare,  exact: false },
   { href: '/cliente/solicitudes/nueva', label: 'Solicitar', icon: Sparkles, exact: true  },
 ]
 

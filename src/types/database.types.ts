@@ -100,6 +100,7 @@ export type Database = {
           estado: ServiceEstado
           fecha_inicio: string | null
           fecha_fin: string | null
+          duracion_dias: number | null
           notas: string | null
           created_at: string
           updated_at: string
@@ -112,6 +113,7 @@ export type Database = {
           estado?: ServiceEstado
           fecha_inicio?: string | null
           fecha_fin?: string | null
+          duracion_dias?: number | null
           notas?: string | null
           created_at?: string
           updated_at?: string
@@ -122,6 +124,7 @@ export type Database = {
           estado?: ServiceEstado
           fecha_inicio?: string | null
           fecha_fin?: string | null
+          duracion_dias?: number | null
           notas?: string | null
           updated_at?: string
         }

@@ -123,8 +123,24 @@ export function ApproveRejectPanel({
         <form action={handleAprobar} className="space-y-4">
           <input type="hidden" name="id" value={solicitudId} />
 
+          <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-xs text-muted-foreground">
+            <p className="font-medium text-foreground">Flujo en dos pasos:</p>
+            <ol className="mt-1 list-decimal space-y-0.5 pl-4">
+              <li>
+                <span className="text-foreground/90">Aprobar solicitud</span> — aceptas
+                gestionar el servicio. La campaña queda <span className="text-warning">en
+                configuración</span>, sin countdown.
+              </li>
+              <li>
+                <span className="text-foreground/90">Iniciar campaña</span> — desde la
+                sección <span className="text-foreground/90">Campañas</span> arrancas el
+                countdown cuando todo esté listo.
+              </li>
+            </ol>
+          </div>
+
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Plan a activar</label>
+            <label className="text-xs font-medium text-muted-foreground">Plan a contratar</label>
             {planes.length === 0 ? (
               <p className="text-xs text-muted-foreground">
                 No hay planes activos. Crea uno antes de aprobar.
@@ -148,8 +164,8 @@ export function ApproveRejectPanel({
 
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">
-              Duración{' '}
-              <span className="font-normal">(días, opcional — sobrescribe el plan)</span>
+              Duración acordada{' '}
+              <span className="font-normal">(días — podrás ajustar al iniciar)</span>
             </label>
             <input
               name="duracion_dias"
@@ -158,12 +174,13 @@ export function ApproveRejectPanel({
               max="3650"
               value={duracion}
               onChange={(e) => setDuracion(e.target.value)}
-              placeholder="Sin duración fija"
+              placeholder="Sin definir"
               className={INPUT}
             />
             {fechaFin && (
               <p className="text-xs text-muted-foreground">
-                Fecha de fin estimada: <span className="text-foreground">{fechaFin}</span>
+                Si se iniciara hoy, terminaría el{' '}
+                <span className="text-foreground">{fechaFin}</span>
               </p>
             )}
           </div>
@@ -179,7 +196,7 @@ export function ApproveRejectPanel({
             )}
           >
             <CheckCircle size={13} />
-            {isPending ? 'Aprobando...' : 'Aprobar solicitud'}
+            {isPending ? 'Aprobando...' : 'Aprobar y crear campaña'}
           </button>
         </form>
       )}
