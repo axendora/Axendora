@@ -105,16 +105,13 @@ export function PlanCard({ plan, oferta, whatsapp, clientName }: PlanCardProps) 
   const successState = state && 'success' in state ? state : null
   const errorState   = state && 'error'   in state ? state : null
 
-  // Rich WhatsApp message for the success modal — includes all plan + offer details
   const modalWaMsg = successState ? (() => {
-    const precioUSD = oferta ? formatUSD(calcUSD(plan.precio_usd, oferta)) : formatUSD(plan.precio_usd)
     const precioCOP = oferta ? formatCOP(calcCOP(plan.precio_cop, oferta)) : formatCOP(plan.precio_cop)
     const tipoPrecioTxt = plan.tipo_precio === 'mensual' ? '/mes' : ' (pago único)'
     let msg =
       `Hola Axendora 👋\n\n` +
       `Soy *${clientName}* y acabo de solicitar el plan *"${plan.nombre}"*.\n`
-    if (precioUSD) msg += `\n💰 *Precio:* ${precioUSD}${tipoPrecioTxt}`
-    if (precioCOP) msg += ` / ${precioCOP}${tipoPrecioTxt}`
+    if (precioCOP) msg += `\n💰 *Precio:* ${precioCOP}${tipoPrecioTxt}`
     if (successState.duracionDias) msg += `\n📅 *Duración:* ${successState.duracionDias} días`
     if (successState.ofertaTitulo) {
       msg += `\n🏷️ *Descuento:* ${successState.ofertaTitulo}`
