@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter, Cormorant_Garamond, Orbitron } from 'next/font/google'
+import { ThemeProvider } from '@/components/providers/theme-provider'
 import './globals.css'
 
 const inter = Inter({
@@ -33,11 +34,14 @@ export default function RootLayout({
   return (
     <html
       lang="es"
+      suppressHydrationWarning
       data-scroll-behavior="smooth"
       className={`${inter.variable} ${cormorant.variable} ${orbitron.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        {children}
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   )

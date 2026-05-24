@@ -2,28 +2,31 @@
 
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
-import { Building2, UserCircle, Bell } from 'lucide-react'
+import { Building2, UserCircle, Bell, Palette } from 'lucide-react'
 import type { AgencySettings } from '@/types/database.types'
 import { AgenciaForm } from './agencia-form'
 import { CuentaForm } from './cuenta-form'
 import { NotificacionesForm } from './notificaciones-form'
+import { AparienciaForm } from './apariencia-form'
 
 const TABS = [
-  { id: 'agencia',        label: 'Agencia',       icon: Building2   },
-  { id: 'cuenta',         label: 'Cuenta',        icon: UserCircle  },
-  { id: 'notificaciones', label: 'Notificaciones', icon: Bell        },
+  { id: 'agencia',        label: 'Agencia',       icon: Building2  },
+  { id: 'cuenta',         label: 'Cuenta',        icon: UserCircle },
+  { id: 'notificaciones', label: 'Notificaciones', icon: Bell       },
+  { id: 'apariencia',     label: 'Apariencia',    icon: Palette    },
 ] as const
 
 type TabId = (typeof TABS)[number]['id']
 
 interface Props {
   settings: AgencySettings | null
+  settingsId: string | null
   userId: string
   nombre: string
   email: string
 }
 
-export function ConfigTabs({ settings, userId, nombre, email }: Props) {
+export function ConfigTabs({ settings, settingsId, userId, nombre, email }: Props) {
   const [active, setActive] = useState<TabId>('agencia')
 
   return (
@@ -53,9 +56,10 @@ export function ConfigTabs({ settings, userId, nombre, email }: Props) {
       </div>
 
       {/* Tab content */}
-      {active === 'agencia' && <AgenciaForm settings={settings} />}
-      {active === 'cuenta' && <CuentaForm userId={userId} nombre={nombre} email={email} />}
-      {active === 'notificaciones' && <NotificacionesForm settings={settings} />}
+      {active === 'agencia'        && <AgenciaForm       settings={settings} settingsId={settingsId} />}
+      {active === 'cuenta'         && <CuentaForm        userId={userId} nombre={nombre} email={email} />}
+      {active === 'notificaciones' && <NotificacionesForm settings={settings} settingsId={settingsId} />}
+      {active === 'apariencia'     && <AparienciaForm />}
     </div>
   )
 }

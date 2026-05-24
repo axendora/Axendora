@@ -9,6 +9,7 @@ import type { AgencySettings } from '@/types/database.types'
 
 interface Props {
   settings: AgencySettings | null
+  settingsId: string | null
 }
 
 interface NotifItem {
@@ -52,7 +53,7 @@ const NOTIFICACIONES: NotifItem[] = [
   },
 ]
 
-export function NotificacionesForm({ settings }: Props) {
+export function NotificacionesForm({ settings, settingsId }: Props) {
   const [isPending, startTransition] = useTransition()
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -71,6 +72,7 @@ export function NotificacionesForm({ settings }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <input type="hidden" name="settings_id" value={settingsId ?? ''} />
       {error && (
         <p className="rounded-lg border border-[#EF4444]/30 bg-[#EF4444]/10 px-4 py-2.5 text-sm text-[#EF4444]">
           {error}

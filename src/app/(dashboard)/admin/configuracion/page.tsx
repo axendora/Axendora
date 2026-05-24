@@ -32,6 +32,7 @@ export default async function AdminConfiguracionPage() {
 
       <ConfigTabs
         settings={settingsRow as AgencySettings | null}
+        settingsId={(settingsRow as AgencySettings | null)?.id ?? null}
         userId={profile?.user_id ?? ''}
         nombre={profile?.nombre ?? ''}
         email={profile?.email ?? user?.email ?? ''}
