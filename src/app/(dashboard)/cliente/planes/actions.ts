@@ -1,12 +1,12 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 export type SolicitarPlanState =
   | null
   | { error: string }
-  | { success: true; planNombre: string; duracionDias: number | null; ofertaTitulo?: string }
+  | { success: true; planNombre: string; duracionDias: number | null; ofertaTitulo?: string; whatsapp: string | null }
 
 export async function solicitarPlanAction(
   _: SolicitarPlanState,
@@ -69,6 +69,14 @@ export async function solicitarPlanAction(
 
   if (error) return { error: error.message }
 
+  // Obtener WhatsApp del admin directamente con service client (bypasses RLS)
+  const service = await createServiceClient()
+  const { data: settings } = await service
+    .from('agency_settings')
+    .select('whatsapp')
+    .limit(1)
+    .single()
+
   revalidatePath('/cliente/solicitudes')
   revalidatePath('/admin/solicitudes')
 
@@ -77,5 +85,6 @@ export async function solicitarPlanAction(
     planNombre:   plan.nombre,
     duracionDias: plan.duracion_dias,
     ofertaTitulo,
+    whatsapp:     settings?.whatsapp ?? null,
   }
 }

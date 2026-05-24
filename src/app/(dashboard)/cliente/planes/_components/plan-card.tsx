@@ -252,7 +252,7 @@ export function PlanCard({ plan, oferta, whatsapp, clientName }: PlanCardProps) 
           duracionDias={successState.duracionDias}
           ofertaTitulo={successState.ofertaTitulo}
           clientName={clientName}
-          whatsapp={whatsapp}
+          whatsapp={successState.whatsapp}
           waMsgOverride={modalWaMsg}
         />
       )}
