@@ -69,13 +69,15 @@ export async function solicitarPlanAction(
 
   if (error) return { error: error.message }
 
-  // Obtener WhatsApp del admin directamente con service client (bypasses RLS)
+  // Obtener WhatsApp del admin — busca la fila que tenga whatsapp configurado
   const service = await createServiceClient()
   const { data: settings } = await service
     .from('agency_settings')
     .select('whatsapp')
+    .not('whatsapp', 'is', null)
+    .order('updated_at', { ascending: false })
     .limit(1)
-    .single()
+    .maybeSingle()
 
   revalidatePath('/cliente/solicitudes')
   revalidatePath('/admin/solicitudes')

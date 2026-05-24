@@ -75,13 +75,15 @@ export default async function ClientePlanesPage() {
   // Si la tabla de ofertas no existe aún, degradar sin error
   const ofertas = (!ofertasRes.error ? (ofertasRes.data ?? []) : []) as OfertaActiva[]
 
-  // Service client bypasses RLS — always reads whatsapp regardless of policies
+  // Service client bypasses RLS — busca la fila que tenga whatsapp configurado
   const serviceSupabase = await createServiceClient()
   const { data: agencyData } = await serviceSupabase
     .from('agency_settings')
     .select('whatsapp')
+    .not('whatsapp', 'is', null)
+    .order('updated_at', { ascending: false })
     .limit(1)
-    .single()
+    .maybeSingle()
   const whatsapp: string | null = agencyData?.whatsapp ?? null
 
   if (planesError) {

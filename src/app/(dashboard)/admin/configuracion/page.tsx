@@ -11,7 +11,7 @@ export default async function AdminConfiguracionPage() {
     { data: settingsRow },
     { data: profile },
   ] = await Promise.all([
-    supabase.from('agency_settings').select('*').limit(1).single(),
+    supabase.from('agency_settings').select('*').order('updated_at', { ascending: false }).limit(1).single(),
     user
       ? supabase
           .from('profiles')
