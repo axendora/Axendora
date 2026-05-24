@@ -282,44 +282,43 @@ export function FinanzasClient({ ingresos, gastos, ingresoCategorias, gastoCateg
         )}
       </div>
 
-      {/* ── Filter bar + Lista (ocultos en tab Resultados) ──────────────── */}
-      {tab !== 'resultados' && (
-        <>
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Período pills */}
-              <div className="flex flex-wrap gap-1.5">
-                {PERIODOS.map((p) => (
-                  <button
-                    key={p.value}
-                    onClick={() => selectPeriodo(p.value)}
-                    className={cn(
-                      'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-                      !modoRango && periodo === p.value
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border text-muted-foreground hover:border-primary/30 hover:text-foreground',
-                    )}
-                  >
-                    {p.label}
-                  </button>
-                ))}
-                <button
-                  onClick={activarRango}
-                  className={cn(
-                    'flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-                    modoRango
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border text-muted-foreground hover:border-primary/30 hover:text-foreground',
-                  )}
-                >
-                  <CalendarRange size={11} />
-                  Rango
-                </button>
-              </div>
+      {/* ── Filter bar (visible en todos los tabs) ──────────────────────── */}
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Período pills */}
+          <div className="flex flex-wrap gap-1.5">
+            {PERIODOS.map((p) => (
+              <button
+                key={p.value}
+                onClick={() => selectPeriodo(p.value)}
+                className={cn(
+                  'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                  !modoRango && periodo === p.value
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-border text-muted-foreground hover:border-primary/30 hover:text-foreground',
+                )}
+              >
+                {p.label}
+              </button>
+            ))}
+            <button
+              onClick={activarRango}
+              className={cn(
+                'flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                modoRango
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-border text-muted-foreground hover:border-primary/30 hover:text-foreground',
+              )}
+            >
+              <CalendarRange size={11} />
+              Rango
+            </button>
+          </div>
 
+          {/* Categoría dropdown — solo en ingresos/gastos */}
+          {tab !== 'resultados' && (
+            <>
               <div className="h-5 w-px bg-border" />
-
-              {/* Categoría dropdown */}
               <div className="relative">
                 <button
                   onClick={() => setShowCat(!showCatDropdown)}
@@ -355,57 +354,61 @@ export function FinanzasClient({ ingresos, gastos, ingresoCategorias, gastoCateg
                   </div>
                 )}
               </div>
+            </>
+          )}
 
-              {hayFiltros && (
-                <button
-                  onClick={limpiarFiltros}
-                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
-                >
-                  <X size={11} />
-                  Limpiar
-                </button>
-              )}
-            </div>
+          {hayFiltros && (
+            <button
+              onClick={limpiarFiltros}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
+            >
+              <X size={11} />
+              Limpiar
+            </button>
+          )}
+        </div>
 
-            {modoRango && (
-              <div className="flex flex-wrap items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
-                <CalendarRange size={14} className="shrink-0 text-primary" />
-                <span className="text-xs font-medium text-primary">Rango personalizado</span>
-                <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex items-center gap-1.5">
-                    <label className="text-[11px] text-muted-foreground">Desde</label>
-                    <input
-                      type="date"
-                      value={rangoDesde}
-                      max={rangoHasta || undefined}
-                      onChange={(e) => setRangoDesde(e.target.value)}
-                      className="rounded-lg border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30"
-                    />
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <label className="text-[11px] text-muted-foreground">Hasta</label>
-                    <input
-                      type="date"
-                      value={rangoHasta}
-                      min={rangoDesde || undefined}
-                      onChange={(e) => setRangoHasta(e.target.value)}
-                      className="rounded-lg border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30"
-                    />
-                  </div>
-                </div>
-                {(rangoDesde || rangoHasta) && (
-                  <button
-                    onClick={() => { setRangoDesde(''); setRangoHasta('') }}
-                    className="ml-auto text-[11px] text-muted-foreground hover:text-destructive"
-                  >
-                    Borrar fechas
-                  </button>
-                )}
+        {modoRango && (
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
+            <CalendarRange size={14} className="shrink-0 text-primary" />
+            <span className="text-xs font-medium text-primary">Rango personalizado</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1.5">
+                <label className="text-[11px] text-muted-foreground">Desde</label>
+                <input
+                  type="date"
+                  value={rangoDesde}
+                  max={rangoHasta || undefined}
+                  onChange={(e) => setRangoDesde(e.target.value)}
+                  className="rounded-lg border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
               </div>
+              <div className="flex items-center gap-1.5">
+                <label className="text-[11px] text-muted-foreground">Hasta</label>
+                <input
+                  type="date"
+                  value={rangoHasta}
+                  min={rangoDesde || undefined}
+                  onChange={(e) => setRangoHasta(e.target.value)}
+                  className="rounded-lg border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+            </div>
+            {(rangoDesde || rangoHasta) && (
+              <button
+                onClick={() => { setRangoDesde(''); setRangoHasta('') }}
+                className="ml-auto text-[11px] text-muted-foreground hover:text-destructive"
+              >
+                Borrar fechas
+              </button>
             )}
           </div>
+        )}
+      </div>
 
-          {/* ── Lista ─────────────────────────────────────────────────────── */}
+      {/* ── Lista (solo en ingresos/gastos) ─────────────────────────────── */}
+      {tab !== 'resultados' && (
+        <>
           {lista.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card py-16 text-center">
               {tab === 'ingresos'
