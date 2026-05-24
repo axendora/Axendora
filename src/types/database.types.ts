@@ -8,6 +8,26 @@ export type TipoPrecio = 'mensual' | 'unico'
 export type FacturaEstado = 'pendiente' | 'pagada' | 'vencida' | 'cancelada'
 export type MonedaTipo = 'USD' | 'COP'
 
+// ── Agency Settings ────────────────────────────────────────
+export type AgencySettings = {
+  id: string
+  nombre_agencia: string
+  slogan: string | null
+  email_contacto: string | null
+  telefono: string | null
+  whatsapp: string | null
+  website: string | null
+  instagram: string | null
+  facebook: string | null
+  notif_bienvenida: boolean
+  notif_solicitud_aprobada: boolean
+  notif_solicitud_rechazada: boolean
+  notif_factura_emitida: boolean
+  notif_campana_iniciada: boolean
+  created_at: string
+  updated_at: string
+}
+
 // ── Finanzas ──────────────────────────────────────────────
 export type IngresoCategoria = {
   id: string
@@ -423,6 +443,61 @@ export type Database = {
           monto?: number
           categoria_id?: string | null
           fecha?: string
+        }
+        Relationships: []
+      }
+      agency_settings: {
+        Row: {
+          id: string
+          nombre_agencia: string
+          slogan: string | null
+          email_contacto: string | null
+          telefono: string | null
+          whatsapp: string | null
+          website: string | null
+          instagram: string | null
+          facebook: string | null
+          notif_bienvenida: boolean
+          notif_solicitud_aprobada: boolean
+          notif_solicitud_rechazada: boolean
+          notif_factura_emitida: boolean
+          notif_campana_iniciada: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          nombre_agencia?: string
+          slogan?: string | null
+          email_contacto?: string | null
+          telefono?: string | null
+          whatsapp?: string | null
+          website?: string | null
+          instagram?: string | null
+          facebook?: string | null
+          notif_bienvenida?: boolean
+          notif_solicitud_aprobada?: boolean
+          notif_solicitud_rechazada?: boolean
+          notif_factura_emitida?: boolean
+          notif_campana_iniciada?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          nombre_agencia?: string
+          slogan?: string | null
+          email_contacto?: string | null
+          telefono?: string | null
+          whatsapp?: string | null
+          website?: string | null
+          instagram?: string | null
+          facebook?: string | null
+          notif_bienvenida?: boolean
+          notif_solicitud_aprobada?: boolean
+          notif_solicitud_rechazada?: boolean
+          notif_factura_emitida?: boolean
+          notif_campana_iniciada?: boolean
+          updated_at?: string
         }
         Relationships: []
       }
