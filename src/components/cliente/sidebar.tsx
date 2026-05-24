@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
+import { ThemeLogo } from '@/components/ui/theme-logo'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard,
@@ -94,14 +94,7 @@ export function ClienteSidebar({ nombre, email, isOpen, onClose }: ClienteSideba
         {/* Logo */}
         <div className="flex h-16 shrink-0 items-center justify-between border-b border-border px-5">
           <Link href="/cliente" onClick={onClose}>
-            <Image
-              src="/logo_letras_blancas.png"
-              alt="Axendora"
-              width={120}
-              height={36}
-              className="h-8 w-auto invert hue-rotate-180 dark:invert-0 dark:hue-rotate-0"
-              priority
-            />
+            <ThemeLogo className="h-8 w-auto" priority />
           </Link>
           <button
             onClick={onClose}
