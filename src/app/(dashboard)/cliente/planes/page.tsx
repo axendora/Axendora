@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 import { Layers, AlertTriangle } from 'lucide-react'
 import { PLAN_CATEGORIAS } from '@/lib/plans'
 import { PlanCard } from './_components/plan-card'
@@ -6,12 +7,27 @@ import { PlanCard } from './_components/plan-card'
 export default async function ClientePlanesPage() {
   const supabase = await createClient()
 
-  const { data: planes, error: planesError } = await supabase
-    .from('plans')
-    .select('id, nombre, descripcion, categoria, precio_usd, precio_cop, tipo_precio, imagen_url, icono, destacado, activo')
-    .eq('activo', true)
-    .order('destacado', { ascending: false })
-    .order('created_at', { ascending: false })
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const [planesRes, profileRes] = await Promise.all([
+    supabase
+      .from('plans')
+      .select('id, nombre, descripcion, categoria, precio_usd, precio_cop, tipo_precio, imagen_url, icono, destacado, activo')
+      .eq('activo', true)
+      .order('destacado', { ascending: false })
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('profiles')
+      .select('nombre')
+      .eq('user_id', user.id)
+      .single(),
+  ])
+
+  const { data: planes, error: planesError } = planesRes
+  const clientName = profileRes.data?.nombre ?? 'Cliente'
 
   // RPC opcional: si la función no existe, degradar sin WhatsApp
   let whatsapp: string | null = null
@@ -70,7 +86,12 @@ export default async function ClientePlanesPage() {
                 </div>
                 <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                   {items.map((plan) => (
-                    <PlanCard key={plan.id} plan={plan} whatsapp={whatsapp} />
+                    <PlanCard
+                      key={plan.id}
+                      plan={plan}
+                      whatsapp={whatsapp}
+                      clientName={clientName}
+                    />
                   ))}
                 </div>
               </section>

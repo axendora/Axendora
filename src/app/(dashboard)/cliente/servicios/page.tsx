@@ -14,6 +14,7 @@ type ClientServiceRow = {
   fecha_fin: string | null
   notas: string | null
   services: { nombre: string; descripcion: string | null; imagen_url: string | null } | null
+  plans:    { nombre: string; descripcion: string | null; imagen_url: string | null } | null
 }
 
 const estadoConfig: Record<ServiceEstado, { label: string; className: string }> = {
@@ -37,7 +38,7 @@ export default async function ServiciosPage() {
 
   const { data: servicios } = await supabase
     .from('client_services')
-    .select('id, estado, fecha_inicio, fecha_fin, notas, services(nombre, descripcion, imagen_url)')
+    .select('id, estado, fecha_inicio, fecha_fin, notas, services(nombre, descripcion, imagen_url), plans(nombre, descripcion, imagen_url)')
     .eq('client_id', user.id)
     .order('created_at', { ascending: false })
     .returns<ClientServiceRow[]>()
@@ -66,8 +67,9 @@ export default async function ServiciosPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {servicios.map((s) => {
-            const estado = estadoConfig[s.estado as ServiceEstado]
-            const service = s.services
+            const estado  = estadoConfig[s.estado as ServiceEstado]
+            const subject = s.plans ?? s.services
+            const isPlan  = !!s.plans
             const isActive = s.estado === 'activo'
             return (
               <div key={s.id}
@@ -77,9 +79,9 @@ export default async function ServiciosPage() {
                 )}>
                 {/* Service image */}
                 <div className="aspect-square w-full overflow-hidden bg-muted/30">
-                  {service?.imagen_url ? (
+                  {subject?.imagen_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={service.imagen_url} alt={service.nombre ?? ''}
+                    <img src={subject.imagen_url} alt={subject.nombre ?? ''}
                       className="h-full w-full object-cover" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center">
@@ -91,15 +93,22 @@ export default async function ServiciosPage() {
                 {/* Info */}
                 <div className="flex flex-1 flex-col p-5">
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-semibold leading-tight">{service?.nombre ?? '—'}</h3>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="font-semibold leading-tight">{subject?.nombre ?? '—'}</h3>
+                      {isPlan && (
+                        <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-primary">
+                          Plan
+                        </span>
+                      )}
+                    </div>
                     <span className={cn('shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium', estado.className)}>
                       {estado.label}
                     </span>
                   </div>
 
-                  {service?.descripcion && (
+                  {subject?.descripcion && (
                     <p className="mt-1.5 line-clamp-2 text-xs text-muted-foreground">
-                      {service.descripcion}
+                      {subject.descripcion}
                     </p>
                   )}
 

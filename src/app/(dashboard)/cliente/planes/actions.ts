@@ -2,9 +2,11 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 
-export type SolicitarPlanState = { error: string } | null
+export type SolicitarPlanState =
+  | null
+  | { error: string }
+  | { success: true; planNombre: string; duracionDias: number | null }
 
 export async function solicitarPlanAction(
   _: SolicitarPlanState,
@@ -19,7 +21,7 @@ export async function solicitarPlanAction(
 
   const { data: plan, error: planErr } = await supabase
     .from('plans')
-    .select('nombre, categoria, tipo_precio')
+    .select('nombre, categoria, tipo_precio, duracion_dias')
     .eq('id', plan_id)
     .single()
 
@@ -27,13 +29,16 @@ export async function solicitarPlanAction(
   if (!plan)   return { error: 'Plan no encontrado' }
 
   const tipoLabel = plan.tipo_precio === 'mensual' ? 'recurrente mensual' : 'pago único'
+  const duracionTxt = plan.duracion_dias
+    ? ` Duración por defecto: ${plan.duracion_dias} días.`
+    : ''
 
   const { error } = await supabase
     .from('solicitudes')
     .insert({
       client_id:   user.id,
       titulo:      `Contratación: ${plan.nombre}`,
-      descripcion: `Solicitud de contratación del plan "${plan.nombre}" (${tipoLabel}). El equipo de Axendora se pondrá en contacto contigo para coordinar el inicio del servicio.`,
+      descripcion: `Solicitud de contratación del plan "${plan.nombre}" (${tipoLabel}).${duracionTxt} El equipo de Axendora se pondrá en contacto contigo para coordinar el inicio del servicio.`,
       tipo:        'plan',
       estado:      'abierta',
       prioridad:   'media',
@@ -44,5 +49,10 @@ export async function solicitarPlanAction(
 
   revalidatePath('/cliente/solicitudes')
   revalidatePath('/admin/solicitudes')
-  redirect('/cliente/solicitudes?nueva=1')
+
+  return {
+    success: true,
+    planNombre: plan.nombre,
+    duracionDias: plan.duracion_dias,
+  }
 }

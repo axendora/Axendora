@@ -18,6 +18,7 @@ type ClientServiceRow = {
   fecha_fin:    string | null
   notas: string | null
   services: { nombre: string; descripcion: string | null; imagen_url: string | null } | null
+  plans:    { nombre: string; descripcion: string | null; imagen_url: string | null } | null
 }
 
 const serviceEstadoConfig: Record<ServiceEstado, { label: string; className: string }> = {
@@ -76,7 +77,7 @@ export default async function ClienteDetailPage({
     supabase.from('profiles').select('*').eq('user_id', userId).single(),
     supabase
       .from('client_services')
-      .select('id, estado, fecha_inicio, fecha_fin, notas, services(nombre, descripcion, imagen_url)')
+      .select('id, estado, fecha_inicio, fecha_fin, notas, services(nombre, descripcion, imagen_url), plans(nombre, descripcion, imagen_url)')
       .eq('client_id', userId)
       .order('created_at', { ascending: false })
       .returns<ClientServiceRow[]>(),
@@ -171,6 +172,8 @@ export default async function ClienteDetailPage({
           <div className="space-y-3">
             {clientServicesRaw.map((cs) => {
               const estadoCfg = serviceEstadoConfig[cs.estado]
+              const subject   = cs.plans ?? cs.services
+              const isPlan    = !!cs.plans
               return (
                 <div key={cs.id}
                   className="overflow-hidden rounded-xl border border-border bg-card">
@@ -178,9 +181,9 @@ export default async function ClienteDetailPage({
                     {/* Image + info */}
                     <div className="flex items-start gap-3 min-w-0">
                       <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-muted/30">
-                        {cs.services?.imagen_url ? (
+                        {subject?.imagen_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={cs.services.imagen_url} alt={cs.services.nombre ?? ''}
+                          <img src={subject.imagen_url} alt={subject.nombre ?? ''}
                             className="h-full w-full object-cover" />
                         ) : (
                           <div className="flex h-full w-full items-center justify-center">
@@ -189,9 +192,16 @@ export default async function ClienteDetailPage({
                         )}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium">{cs.services?.nombre ?? '—'}</p>
-                        {cs.services?.descripcion && (
-                          <p className="text-xs text-muted-foreground line-clamp-1">{cs.services.descripcion}</p>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-sm font-medium">{subject?.nombre ?? '—'}</p>
+                          {isPlan && (
+                            <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-primary">
+                              Plan
+                            </span>
+                          )}
+                        </div>
+                        {subject?.descripcion && (
+                          <p className="text-xs text-muted-foreground line-clamp-1">{subject.descripcion}</p>
                         )}
                         <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                           {cs.fecha_inicio && <span>Inicio: {formatDate(cs.fecha_inicio)}</span>}
