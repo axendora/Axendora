@@ -32,7 +32,7 @@ export function ConfigTabs({ settings, settingsId, userId, nombre, email }: Prop
   return (
     <div className="space-y-6">
       {/* Tab bar */}
-      <div className="flex gap-1 rounded-xl border border-[#27272A] bg-[#121212] p-1">
+      <div className="flex gap-1 rounded-xl border border-border bg-card p-1">
         {TABS.map((tab) => {
           const Icon = tab.icon
           const isActive = active === tab.id
@@ -44,8 +44,8 @@ export function ConfigTabs({ settings, settingsId, userId, nombre, email }: Prop
               className={cn(
                 'flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150',
                 isActive
-                  ? 'bg-[#14A8B6]/10 text-[#14A8B6]'
-                  : 'text-[#71717A] hover:text-white',
+                  ? 'bg-[#14A8B6]/10 text-primary'
+                  : 'text-muted-foreground hover:text-foreground',
               )}
             >
               <Icon size={15} />

@@ -15,7 +15,7 @@ export function AdminShell({ children, nombre, email, notificationCount }: Admin
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#0A0A0A]">
+    <div className="flex h-screen overflow-hidden bg-background">
       <AdminSidebar
         nombre={nombre}
         email={email}

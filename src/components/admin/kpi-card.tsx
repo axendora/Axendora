@@ -27,18 +27,18 @@ export function KpiCard({ label, value, iconNode, href, index, change, suffix }:
     >
       <Link
         href={href}
-        className="group block rounded-xl border border-[#27272A] bg-[#121212] p-6 transition-all duration-200 hover:border-[#14A8B6]/40 hover:shadow-lg hover:shadow-[#14A8B6]/5"
+        className="group block rounded-xl border border-border bg-card p-6 transition-all duration-200 hover:border-[#14A8B6]/40 hover:shadow-lg hover:shadow-[#14A8B6]/5"
       >
         <div className="flex items-start justify-between">
-          <p className="text-sm font-medium text-[#A1A1AA]">{label}</p>
+          <p className="text-sm font-medium text-muted-foreground">{label}</p>
           <div className="rounded-lg bg-[#14A8B6]/10 p-2">
             {iconNode}
           </div>
         </div>
 
-        <p className="mt-4 font-[family-name:var(--font-orbitron)] text-4xl font-bold tracking-tight text-white">
+        <p className="mt-4 font-[family-name:var(--font-orbitron)] text-4xl font-bold tracking-tight text-foreground">
           {value}
-          {suffix && <span className="text-2xl text-[#A1A1AA]">{suffix}</span>}
+          {suffix && <span className="text-2xl text-muted-foreground">{suffix}</span>}
         </p>
 
         {trend && (
@@ -49,7 +49,7 @@ export function KpiCard({ label, value, iconNode, href, index, change, suffix }:
                 ? 'text-[#10B981]'
                 : trend === 'down'
                   ? 'text-[#EF4444]'
-                  : 'text-[#71717A]',
+                  : 'text-muted-foreground',
             )}
           >
             {trend === 'up' && <TrendingUp size={13} />}
@@ -58,7 +58,7 @@ export function KpiCard({ label, value, iconNode, href, index, change, suffix }:
             {Math.abs(change!)}% vs mes anterior
           </div>
         )}
-        {!trend && <p className="mt-2 text-xs text-[#71717A]">Actualizado ahora</p>}
+        {!trend && <p className="mt-2 text-xs text-muted-foreground">Actualizado ahora</p>}
       </Link>
     </motion.div>
   )

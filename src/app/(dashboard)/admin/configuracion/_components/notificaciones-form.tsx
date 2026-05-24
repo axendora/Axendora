@@ -85,29 +85,29 @@ export function NotificacionesForm({ settings, settingsId }: Props) {
         </div>
       )}
 
-      <div className="rounded-xl border border-[#27272A] bg-[#121212] overflow-hidden">
-        <div className="flex items-center gap-3 border-b border-[#27272A] px-6 py-4">
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
+        <div className="flex items-center gap-3 border-b border-border px-6 py-4">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#14A8B6]/10">
-            <Mail size={15} className="text-[#14A8B6]" />
+            <Mail size={15} className="text-primary" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-white">Emails automáticos a clientes</p>
-            <p className="text-xs text-[#71717A]">Activa o desactiva cada tipo de notificación.</p>
+            <p className="text-sm font-semibold text-foreground">Emails automáticos a clientes</p>
+            <p className="text-xs text-muted-foreground">Activa o desactiva cada tipo de notificación.</p>
           </div>
         </div>
 
-        <div className="divide-y divide-[#27272A]">
+        <div className="divide-y divide-border">
           {NOTIFICACIONES.map((notif) => {
             const defaultChecked = settings ? settings[notif.key] : true
             return (
               <label
                 key={notif.key}
                 htmlFor={notif.key}
-                className="flex cursor-pointer items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-[#1A1A1A]"
+                className="flex cursor-pointer items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-secondary"
               >
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-white">{notif.label}</p>
-                  <p className="mt-0.5 text-xs text-[#71717A]">{notif.description}</p>
+                  <p className="text-sm font-medium text-foreground">{notif.label}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{notif.description}</p>
                 </div>
                 <Toggle id={notif.key} name={notif.key} defaultChecked={defaultChecked} />
               </label>
@@ -154,7 +154,7 @@ function Toggle({
         onClick={() => setChecked((v) => !v)}
         className={cn(
           'relative h-5 w-9 cursor-pointer rounded-full transition-colors duration-200',
-          checked ? 'bg-[#14A8B6]' : 'bg-[#27272A]',
+          checked ? 'bg-primary' : 'bg-muted',
         )}
       >
         <span

@@ -31,10 +31,10 @@ type ServicioItem = {
 }
 
 const estadoConfig: Record<SolicitudEstado, { label: string; className: string }> = {
-  abierta:    { label: 'Pendiente',  className: 'bg-[#14A8B6]/10 text-[#14A8B6]' },
+  abierta:    { label: 'Pendiente',  className: 'bg-[#14A8B6]/10 text-primary' },
   en_proceso: { label: 'En revisión', className: 'bg-[#F59E0B]/10 text-[#F59E0B]' },
   resuelta:   { label: 'Resuelta',   className: 'bg-[#10B981]/10 text-[#10B981]' },
-  cerrada:    { label: 'Cerrada',    className: 'bg-[#27272A] text-[#71717A]' },
+  cerrada:    { label: 'Cerrada',    className: 'bg-muted text-muted-foreground' },
   aprobada:   { label: 'Aprobada',   className: 'bg-[#10B981]/10 text-[#10B981]' },
   rechazada:  { label: 'Rechazada',  className: 'bg-[#EF4444]/10 text-[#EF4444]' },
 }
@@ -42,8 +42,8 @@ const estadoConfig: Record<SolicitudEstado, { label: string; className: string }
 const servicioEstadoConfig: Record<ServiceEstado, { label: string; className: string }> = {
   en_configuracion: { label: 'Configurando', className: 'bg-[#F59E0B]/10 text-[#F59E0B]' },
   activo:           { label: 'Activo',        className: 'bg-[#10B981]/10 text-[#10B981]' },
-  pausado:          { label: 'Pausado',       className: 'bg-[#27272A] text-[#71717A]'   },
-  finalizado:       { label: 'Finalizado',    className: 'bg-[#27272A] text-[#71717A]'   },
+  pausado:          { label: 'Pausado',       className: 'bg-muted text-muted-foreground'   },
+  finalizado:       { label: 'Finalizado',    className: 'bg-muted text-muted-foreground'   },
 }
 
 const tipoLabel: Record<SolicitudTipo, string> = {
@@ -51,7 +51,7 @@ const tipoLabel: Record<SolicitudTipo, string> = {
 }
 
 const prioridadConfig: Record<SolicitudPrioridad, { label: string; className: string }> = {
-  baja:  { label: 'Baja',  className: 'text-[#71717A]' },
+  baja:  { label: 'Baja',  className: 'text-muted-foreground' },
   media: { label: 'Media', className: 'text-[#F59E0B]' },
   alta:  { label: 'Alta',  className: 'text-[#EF4444]' },
 }
@@ -97,25 +97,25 @@ export default async function ClienteDashboardPage() {
     {
       label: 'Servicios activos',
       value: serviciosActivos ?? 0,
-      iconNode: <Package size={18} className="text-[#14A8B6]" />,
+      iconNode: <Package size={18} className="text-primary" />,
       href: '/cliente/servicios',
     },
     {
       label: 'Total contratados',
       value: serviciosTotales ?? 0,
-      iconNode: <ShoppingBag size={18} className="text-[#14A8B6]" />,
+      iconNode: <ShoppingBag size={18} className="text-primary" />,
       href: '/cliente/servicios',
     },
     {
       label: 'Solicitudes abiertas',
       value: solicitudesAbiertas ?? 0,
-      iconNode: <MessageSquare size={18} className="text-[#14A8B6]" />,
+      iconNode: <MessageSquare size={18} className="text-primary" />,
       href: '/cliente/solicitudes',
     },
     {
       label: 'Casos resueltos',
       value: solicitudesResueltas ?? 0,
-      iconNode: <CheckCircle size={18} className="text-[#14A8B6]" />,
+      iconNode: <CheckCircle size={18} className="text-primary" />,
       href: '/cliente/solicitudes',
     },
   ]
@@ -125,16 +125,16 @@ export default async function ClienteDashboardPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white sm:text-3xl">
+          <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
             Hola, {firstName} 👋
           </h1>
-          <p className="mt-1 text-sm text-[#A1A1AA]">
+          <p className="mt-1 text-sm text-muted-foreground">
             Este es el resumen de tu actividad con Axendora.
           </p>
         </div>
         <Link
           href="/cliente/solicitudes/nueva"
-          className="flex w-fit items-center gap-2 rounded-xl bg-[#14A8B6] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0F8A95]"
+          className="flex w-fit items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-[#0F8A95]"
         >
           <Sparkles size={15} />
           Solicitar servicio
@@ -158,25 +158,25 @@ export default async function ClienteDashboardPage() {
       {/* Active services */}
       <div>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-semibold text-white">Servicios activos</h2>
+          <h2 className="font-semibold text-foreground">Servicios activos</h2>
           <Link
             href="/cliente/servicios"
-            className="flex items-center gap-1 text-xs text-[#14A8B6] hover:underline"
+            className="flex items-center gap-1 text-xs text-primary hover:underline"
           >
             Ver todos <ArrowRight size={12} />
           </Link>
         </div>
 
         {!serviciosDetalle?.length ? (
-          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[#27272A] bg-[#121212] py-14 text-center">
+          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card py-14 text-center">
             <Package size={36} className="mb-3 text-[#27272A]" />
-            <p className="text-base font-medium text-white">Aún no tienes servicios activos</p>
-            <p className="mt-1 max-w-xs text-sm text-[#A1A1AA]">
+            <p className="text-base font-medium text-foreground">Aún no tienes servicios activos</p>
+            <p className="mt-1 max-w-xs text-sm text-muted-foreground">
               Solicita un servicio y nuestro equipo lo activará en breve.
             </p>
             <Link
               href="/cliente/solicitudes/nueva"
-              className="mt-5 flex items-center gap-2 rounded-xl bg-[#14A8B6] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0F8A95]"
+              className="mt-5 flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-[#0F8A95]"
             >
               <Sparkles size={15} />
               Solicitar primer servicio
@@ -189,9 +189,9 @@ export default async function ClienteDashboardPage() {
               return (
                 <div
                   key={s.id}
-                  className="flex flex-col overflow-hidden rounded-xl border border-[#27272A] bg-[#121212] transition-colors hover:border-[#14A8B6]/30"
+                  className="flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-[#14A8B6]/30"
                 >
-                  <div className="aspect-video w-full overflow-hidden bg-[#1A1A1A]">
+                  <div className="aspect-video w-full overflow-hidden bg-secondary">
                     {s.services?.imagen_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -207,7 +207,7 @@ export default async function ClienteDashboardPage() {
                   </div>
                   <div className="p-4">
                     <div className="flex items-start justify-between gap-2">
-                      <p className="font-medium leading-tight text-white">
+                      <p className="font-medium leading-tight text-foreground">
                         {s.services?.nombre ?? '—'}
                       </p>
                       <span
@@ -220,13 +220,13 @@ export default async function ClienteDashboardPage() {
                       </span>
                     </div>
                     {s.fecha_inicio && (
-                      <p className="mt-2 text-xs text-[#71717A]">
+                      <p className="mt-2 text-xs text-muted-foreground">
                         Desde {formatShortDate(s.fecha_inicio)}
                       </p>
                     )}
                     <Link
                       href="/cliente/servicios"
-                      className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-[#14A8B6] hover:underline"
+                      className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
                     >
                       Ver detalles <ArrowRight size={11} />
                     </Link>
@@ -238,25 +238,25 @@ export default async function ClienteDashboardPage() {
             {/* Add new service card */}
             <Link
               href="/cliente/solicitudes/nueva"
-              className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[#14A8B6]/30 bg-[#121212] p-8 text-center transition-all hover:border-[#14A8B6] hover:bg-[#14A8B6]/5"
+              className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[#14A8B6]/30 bg-card p-8 text-center transition-all hover:border-primary hover:bg-[#14A8B6]/5"
             >
               <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#14A8B6]/10">
-                <Sparkles size={20} className="text-[#14A8B6]" />
+                <Sparkles size={20} className="text-primary" />
               </div>
-              <p className="text-sm font-medium text-[#14A8B6]">+ Solicitar nuevo servicio</p>
-              <p className="mt-1 text-xs text-[#71717A]">Nuestro equipo te contactará pronto</p>
+              <p className="text-sm font-medium text-primary">+ Solicitar nuevo servicio</p>
+              <p className="mt-1 text-xs text-muted-foreground">Nuestro equipo te contactará pronto</p>
             </Link>
           </div>
         )}
       </div>
 
       {/* Recent solicitudes */}
-      <div className="rounded-xl border border-[#27272A] bg-[#121212]">
-        <div className="flex items-center justify-between border-b border-[#27272A] px-6 py-4">
-          <h2 className="font-semibold text-white">Solicitudes recientes</h2>
+      <div className="rounded-xl border border-border bg-card">
+        <div className="flex items-center justify-between border-b border-border px-6 py-4">
+          <h2 className="font-semibold text-foreground">Solicitudes recientes</h2>
           <Link
             href="/cliente/solicitudes"
-            className="flex items-center gap-1 text-xs text-[#14A8B6] hover:underline"
+            className="flex items-center gap-1 text-xs text-primary hover:underline"
           >
             Ver todas <ArrowRight size={12} />
           </Link>
@@ -265,24 +265,24 @@ export default async function ClienteDashboardPage() {
         {!solicitudesRecientes?.length ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <MessageSquare size={32} className="mb-3 text-[#27272A]" />
-            <p className="text-sm text-[#71717A]">Aún no tienes solicitudes.</p>
+            <p className="text-sm text-muted-foreground">Aún no tienes solicitudes.</p>
             <Link
               href="/cliente/solicitudes/nueva"
-              className="mt-3 text-sm text-[#14A8B6] hover:underline"
+              className="mt-3 text-sm text-primary hover:underline"
             >
               Crear primera solicitud
             </Link>
           </div>
         ) : (
-          <div className="divide-y divide-[#27272A]">
+          <div className="divide-y divide-border">
             {solicitudesRecientes.map((s) => {
               const estado = estadoConfig[s.estado as SolicitudEstado]
               const prioridad = prioridadConfig[s.prioridad as SolicitudPrioridad]
               return (
                 <div key={s.id} className="flex items-center justify-between gap-4 px-6 py-4">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-white">{s.titulo}</p>
-                    <p className="text-xs text-[#71717A]">
+                    <p className="truncate text-sm font-medium text-foreground">{s.titulo}</p>
+                    <p className="text-xs text-muted-foreground">
                       {tipoLabel[s.tipo as SolicitudTipo]} · {formatDate(s.created_at)}
                     </p>
                   </div>
@@ -307,16 +307,16 @@ export default async function ClienteDashboardPage() {
       </div>
 
       {/* CTA Banner */}
-      <div className="relative overflow-hidden rounded-2xl border border-[#14A8B6]/20 bg-[#121212] p-8">
+      <div className="relative overflow-hidden rounded-2xl border border-[#14A8B6]/20 bg-card p-8">
         <div className="absolute inset-0 bg-gradient-to-r from-[#0A6670]/25 via-transparent to-transparent" />
         <div className="relative z-10">
-          <h3 className="text-lg font-bold text-white">¿Quieres potenciar tus resultados?</h3>
-          <p className="mt-1 max-w-md text-sm text-[#A1A1AA]">
+          <h3 className="text-lg font-bold text-foreground">¿Quieres potenciar tus resultados?</h3>
+          <p className="mt-1 max-w-md text-sm text-muted-foreground">
             Habla con tu asesor de Axendora y descubre qué más podemos hacer por tu negocio.
           </p>
           <Link
             href="/cliente/solicitudes/nueva"
-            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#14A8B6] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0F8A95]"
+            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-[#0F8A95]"
           >
             <Sparkles size={15} />
             Habla con tu asesor

@@ -84,8 +84,8 @@ export function EstadoResultados({
       {/* Botón de descarga */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-semibold text-white">Estado de Resultados</h2>
-          <p className="mt-0.5 text-xs text-[#71717A]">
+          <h2 className="font-semibold text-foreground">Estado de Resultados</h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">
             Basado en los registros filtrados del período actual.
           </p>
         </div>
@@ -105,13 +105,13 @@ export function EstadoResultados({
       </div>
 
       {/* Preview contable */}
-      <div className="overflow-hidden rounded-xl border border-[#27272A] bg-[#121212]">
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
 
         {/* Cabecera */}
-        <div className="border-b border-[#27272A] bg-[#0A0A0A] px-6 py-5">
-          <p className="text-xs font-semibold uppercase tracking-widest text-[#14A8B6]">Axendora</p>
-          <h3 className="mt-0.5 text-lg font-bold text-white">Estado de Resultados</h3>
-          <p className="mt-1 text-xs text-[#71717A]">
+        <div className="border-b border-border bg-background px-6 py-5">
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary">Axendora</p>
+          <h3 className="mt-0.5 text-lg font-bold text-foreground">Estado de Resultados</h3>
+          <p className="mt-1 text-xs text-muted-foreground">
             {modoRango
               ? rangoDesde && rangoHasta
                 ? `Del ${rangoDesde} al ${rangoHasta}`
@@ -137,7 +137,7 @@ export function EstadoResultados({
           emptyMsg="Sin ingresos en este período"
         />
 
-        <div className="mx-6 border-t border-dashed border-[#27272A]" />
+        <div className="mx-6 border-t border-dashed border-border" />
 
         {/* GASTOS */}
         <Section
@@ -181,7 +181,7 @@ export function EstadoResultados({
                 >
                   {esUtilidad ? 'UTILIDAD DEL PERÍODO' : 'PÉRDIDA DEL PERÍODO'}
                 </p>
-                <p className="text-xs text-[#71717A]">Ingresos menos Gastos</p>
+                <p className="text-xs text-muted-foreground">Ingresos menos Gastos</p>
               </div>
             </div>
             <p
@@ -255,19 +255,19 @@ function Section({
         <div>
           {rows.length === 0 ? (
             <div className="px-8 py-3">
-              <p className="text-xs italic text-[#71717A]">{emptyMsg}</p>
+              <p className="text-xs italic text-muted-foreground">{emptyMsg}</p>
             </div>
           ) : (
             rows.map(([cat, monto]) => (
               <div
                 key={cat}
                 className={cn(
-                  'flex items-center justify-between gap-4 border-b border-[#27272A]/50 px-8 py-2.5 transition-colors',
+                  'flex items-center justify-between gap-4 border-b border-border/50 px-8 py-2.5 transition-colors',
                   bgRow,
                 )}
               >
-                <p className="text-sm text-[#A1A1AA]">{cat}</p>
-                <p className="shrink-0 text-sm tabular-nums text-white">{usd(monto)}</p>
+                <p className="text-sm text-muted-foreground">{cat}</p>
+                <p className="shrink-0 text-sm tabular-nums text-foreground">{usd(monto)}</p>
               </div>
             ))
           )}

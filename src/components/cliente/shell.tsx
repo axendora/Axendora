@@ -20,7 +20,7 @@ function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 flex h-16 items-center justify-around border-t border-[#27272A] bg-[#0A0A0A] px-2 lg:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-30 flex h-16 items-center justify-around border-t border-border bg-background px-2 lg:hidden">
       {BOTTOM_NAV.map((item) => {
         const active = item.exact ? pathname === item.href : pathname.startsWith(item.href)
         const Icon = item.icon
@@ -32,10 +32,10 @@ function BottomNav() {
             className={cn(
               'flex flex-col items-center gap-0.5 rounded-lg px-3 py-2 text-[10px] font-medium transition-colors',
               isCTA
-                ? 'text-[#14A8B6]'
+                ? 'text-primary'
                 : active
-                  ? 'text-[#14A8B6]'
-                  : 'text-[#71717A] hover:text-white',
+                  ? 'text-primary'
+                  : 'text-muted-foreground hover:text-foreground',
             )}
           >
             <Icon size={20} />
@@ -58,7 +58,7 @@ export function ClienteShell({ children, nombre, email, notificationCount }: Cli
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#0A0A0A]">
+    <div className="flex h-screen overflow-hidden bg-background">
       <ClienteSidebar
         nombre={nombre}
         email={email}

@@ -86,26 +86,26 @@ export function ClienteSidebar({ nombre, email, isOpen, onClose }: ClienteSideba
 
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-40 flex w-60 flex-col border-r border-[#27272A] bg-[#121212] transition-transform duration-200 ease-in-out',
+          'fixed inset-y-0 left-0 z-40 flex w-60 flex-col border-r border-border bg-card transition-transform duration-200 ease-in-out',
           'lg:static lg:translate-x-0',
           isOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
         {/* Logo */}
-        <div className="flex h-16 shrink-0 items-center justify-between border-b border-[#27272A] px-5">
+        <div className="flex h-16 shrink-0 items-center justify-between border-b border-border px-5">
           <Link href="/cliente" onClick={onClose}>
             <Image
               src="/logo_letras_blancas.png"
               alt="Axendora"
               width={120}
               height={36}
-              className="h-8 w-auto"
+              className="h-8 w-auto dark:brightness-100 brightness-0"
               priority
             />
           </Link>
           <button
             onClick={onClose}
-            className="text-[#71717A] transition-colors hover:text-white lg:hidden"
+            className="text-muted-foreground transition-colors hover:text-foreground lg:hidden"
             aria-label="Cerrar menú"
           >
             <X size={18} />
@@ -116,7 +116,7 @@ export function ClienteSidebar({ nombre, email, isOpen, onClose }: ClienteSideba
         <nav className="scrollbar-hidden flex-1 overflow-y-auto py-4 px-3">
           {NAV_GROUPS.map((group) => (
             <div key={group.label} className="mb-5">
-              <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest text-[#71717A]">
+              <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                 {group.label}
               </p>
               <ul className="space-y-0.5">
@@ -131,12 +131,12 @@ export function ClienteSidebar({ nombre, email, isOpen, onClose }: ClienteSideba
                         className={cn(
                           'relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150',
                           active
-                            ? 'bg-[#14A8B6]/10 text-[#14A8B6]'
-                            : 'text-[#A1A1AA] hover:bg-[#1A1A1A] hover:text-white',
+                            ? 'bg-[#14A8B6]/10 text-primary'
+                            : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
                         )}
                       >
                         {active && (
-                          <span className="absolute inset-y-1 left-0 w-[3px] rounded-r-full bg-[#14A8B6]" />
+                          <span className="absolute inset-y-1 left-0 w-[3px] rounded-r-full bg-primary" />
                         )}
                         <Icon size={17} />
                         {item.label}
@@ -154,7 +154,7 @@ export function ClienteSidebar({ nombre, email, isOpen, onClose }: ClienteSideba
           <Link
             href="/cliente/solicitudes/nueva"
             onClick={onClose}
-            className="flex items-center justify-center gap-2 rounded-xl bg-[#14A8B6] px-4 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#0F8A95] hover:scale-[1.02] active:scale-[0.99]"
+            className="flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-foreground transition-all duration-200 hover:bg-[#0F8A95] hover:scale-[1.02] active:scale-[0.99]"
           >
             <Sparkles size={16} />
             Solicitar servicio
@@ -162,21 +162,21 @@ export function ClienteSidebar({ nombre, email, isOpen, onClose }: ClienteSideba
         </div>
 
         {/* User footer */}
-        <div className="border-t border-[#27272A] p-4">
+        <div className="border-t border-border p-4">
           <div className="mb-3 flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#14A8B6]/20 text-sm font-bold text-[#14A8B6]">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#14A8B6]/20 text-sm font-bold text-primary">
               {initials}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-white">{nombre}</p>
-              <span className="inline-block rounded-full bg-[#14A8B6]/15 px-2 py-0.5 text-[10px] font-semibold text-[#14A8B6]">
+              <p className="truncate text-sm font-medium text-foreground">{nombre}</p>
+              <span className="inline-block rounded-full bg-[#14A8B6]/15 px-2 py-0.5 text-[10px] font-semibold text-primary">
                 Cliente
               </span>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-[#71717A] transition-colors hover:bg-[#1A1A1A] hover:text-white"
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
             <LogOut size={15} />
             Cerrar sesión

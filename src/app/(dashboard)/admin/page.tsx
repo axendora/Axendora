@@ -19,10 +19,10 @@ import { SolicitudesEstadoChart } from '@/components/dashboard/charts/solicitude
 
 // timezone helpers now imported from @/lib/timezone
 const estadoConfig: Record<SolicitudEstado, { label: string; className: string }> = {
-  abierta:    { label: 'Abierta',    className: 'bg-[#14A8B6]/10 text-[#14A8B6]' },
+  abierta:    { label: 'Abierta',    className: 'bg-[#14A8B6]/10 text-primary' },
   en_proceso: { label: 'En proceso', className: 'bg-[#F59E0B]/10 text-[#F59E0B]' },
   resuelta:   { label: 'Resuelta',   className: 'bg-[#10B981]/10 text-[#10B981]' },
-  cerrada:    { label: 'Cerrada',    className: 'bg-[#27272A] text-[#71717A]' },
+  cerrada:    { label: 'Cerrada',    className: 'bg-muted text-muted-foreground' },
   aprobada:   { label: 'Aprobada',   className: 'bg-[#10B981]/10 text-[#10B981]' },
   rechazada:  { label: 'Rechazada',  className: 'bg-[#EF4444]/10 text-[#EF4444]' },
 }
@@ -32,7 +32,7 @@ const tipoLabel: Record<SolicitudTipo, string> = {
 }
 
 const prioridadConfig: Record<SolicitudPrioridad, { label: string; className: string }> = {
-  baja:  { label: 'Baja',  className: 'text-[#71717A]' },
+  baja:  { label: 'Baja',  className: 'text-muted-foreground' },
   media: { label: 'Media', className: 'text-[#F59E0B]' },
   alta:  { label: 'Alta',  className: 'text-[#EF4444]' },
 }
@@ -136,28 +136,28 @@ export default async function AdminDashboardPage() {
     {
       label: 'Clientes registrados',
       value: totalClientes ?? 0,
-      iconNode: <Users size={18} className="text-[#14A8B6]" />,
+      iconNode: <Users size={18} className="text-primary" />,
       href: '/admin/clientes',
       change: clientesTrend,
     },
     {
       label: 'Servicios activos',
       value: serviciosActivos ?? 0,
-      iconNode: <Package size={18} className="text-[#14A8B6]" />,
+      iconNode: <Package size={18} className="text-primary" />,
       href: '/admin/servicios',
       change: undefined,
     },
     {
       label: 'Solicitudes abiertas',
       value: solicitudesAbiertas ?? 0,
-      iconNode: <MessageSquare size={18} className="text-[#14A8B6]" />,
+      iconNode: <MessageSquare size={18} className="text-primary" />,
       href: '/admin/solicitudes',
       change: undefined,
     },
     {
       label: 'En proceso',
       value: pendientesTotal,
-      iconNode: <Clock size={18} className="text-[#14A8B6]" />,
+      iconNode: <Clock size={18} className="text-primary" />,
       href: '/admin/solicitudes',
       change: undefined,
     },
@@ -167,10 +167,10 @@ export default async function AdminDashboardPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white sm:text-3xl">
+        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
           Panel de administración
         </h1>
-        <p className="mt-1 text-sm text-[#A1A1AA]">Resumen general de Axendora.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Resumen general de Axendora.</p>
       </div>
 
       {/* KPI Cards */}
@@ -191,26 +191,26 @@ export default async function AdminDashboardPage() {
       {/* Charts row */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Trend area chart */}
-        <div className="rounded-xl border border-[#27272A] bg-[#121212] p-6 lg:col-span-2">
+        <div className="rounded-xl border border-border bg-card p-6 lg:col-span-2">
           <div className="mb-6">
-            <h2 className="font-semibold text-white">Tendencia de solicitudes</h2>
-            <p className="mt-0.5 text-xs text-[#71717A]">Últimos 6 meses</p>
+            <h2 className="font-semibold text-foreground">Tendencia de solicitudes</h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">Últimos 6 meses</p>
           </div>
           <SolicitudesTrendChart data={trendData} />
         </div>
 
         {/* Donut chart */}
-        <div className="rounded-xl border border-[#27272A] bg-[#121212] p-6">
+        <div className="rounded-xl border border-border bg-card p-6">
           <div className="mb-4">
-            <h2 className="font-semibold text-white">Por tipo</h2>
-            <p className="mt-0.5 text-xs text-[#71717A]">Distribución de solicitudes</p>
+            <h2 className="font-semibold text-foreground">Por tipo</h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">Distribución de solicitudes</p>
           </div>
           {tipoChartData.length > 0 ? (
             <SolicitudesEstadoChart data={tipoChartData} />
           ) : (
             <div className="flex h-44 flex-col items-center justify-center gap-2">
               <Activity size={28} className="text-[#27272A]" />
-              <p className="text-sm text-[#71717A]">Sin datos aún</p>
+              <p className="text-sm text-muted-foreground">Sin datos aún</p>
             </div>
           )}
         </div>
@@ -219,12 +219,12 @@ export default async function AdminDashboardPage() {
       {/* Bottom row */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Solicitudes pendientes */}
-        <div className="rounded-xl border border-[#27272A] bg-[#121212] lg:col-span-2">
-          <div className="flex items-center justify-between border-b border-[#27272A] px-6 py-4">
-            <h2 className="font-semibold text-white">Solicitudes pendientes</h2>
+        <div className="rounded-xl border border-border bg-card lg:col-span-2">
+          <div className="flex items-center justify-between border-b border-border px-6 py-4">
+            <h2 className="font-semibold text-foreground">Solicitudes pendientes</h2>
             <Link
               href="/admin/solicitudes"
-              className="flex items-center gap-1 text-xs text-[#14A8B6] hover:underline"
+              className="flex items-center gap-1 text-xs text-primary hover:underline"
             >
               Ver todas <ArrowRight size={12} />
             </Link>
@@ -233,10 +233,10 @@ export default async function AdminDashboardPage() {
           {!solicitudesRecientes?.length ? (
             <div className="flex flex-col items-center justify-center py-14">
               <CheckCircle size={32} className="mb-3 text-[#10B981]" />
-              <p className="text-sm text-[#71717A]">Sin solicitudes pendientes</p>
+              <p className="text-sm text-muted-foreground">Sin solicitudes pendientes</p>
             </div>
           ) : (
-            <div className="divide-y divide-[#27272A]">
+            <div className="divide-y divide-border">
               {solicitudesRecientes.map((s) => {
                 const estado = estadoConfig[s.estado as SolicitudEstado]
                 const prioridad = prioridadConfig[s.prioridad as SolicitudPrioridad]
@@ -244,11 +244,11 @@ export default async function AdminDashboardPage() {
                   <Link
                     key={s.id}
                     href={`/admin/solicitudes/${s.id}`}
-                    className="flex items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-[#1A1A1A]"
+                    className="flex items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-secondary"
                   >
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-white">{s.titulo}</p>
-                      <p className="text-xs text-[#71717A]">
+                      <p className="truncate text-sm font-medium text-foreground">{s.titulo}</p>
+                      <p className="text-xs text-muted-foreground">
                         {tipoLabel[s.tipo as SolicitudTipo]} · {formatDate(s.created_at, timezone, { day: 'numeric', month: 'short' })}
                       </p>
                     </div>
@@ -273,25 +273,25 @@ export default async function AdminDashboardPage() {
         </div>
 
         {/* Actividad reciente */}
-        <div className="rounded-xl border border-[#27272A] bg-[#121212]">
-          <div className="border-b border-[#27272A] px-6 py-4">
-            <h2 className="font-semibold text-white">Actividad reciente</h2>
+        <div className="rounded-xl border border-border bg-card">
+          <div className="border-b border-border px-6 py-4">
+            <h2 className="font-semibold text-foreground">Actividad reciente</h2>
           </div>
           {!actividadReciente?.length ? (
             <div className="flex flex-col items-center justify-center py-12">
               <Activity size={28} className="mb-2 text-[#27272A]" />
-              <p className="text-sm text-[#71717A]">Sin actividad</p>
+              <p className="text-sm text-muted-foreground">Sin actividad</p>
             </div>
           ) : (
-            <div className="divide-y divide-[#27272A]">
+            <div className="divide-y divide-border">
               {actividadReciente.map((a) => (
                 <div key={a.id} className="flex items-start gap-3 px-5 py-3.5">
                   <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#14A8B6]/10">
-                    <Activity size={13} className="text-[#14A8B6]" />
+                    <Activity size={13} className="text-primary" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm text-white">{a.titulo}</p>
-                    <p className="text-xs text-[#71717A]">
+                    <p className="truncate text-sm text-foreground">{a.titulo}</p>
+                    <p className="text-xs text-muted-foreground">
                       {tipoLabel[a.tipo as SolicitudTipo]} · {formatRelative(a.created_at, timezone)}
                     </p>
                   </div>

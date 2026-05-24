@@ -33,18 +33,19 @@ export async function updateAgenciaAction(
 
   const service = await createServiceClient()
 
-  let dbError
-  if (settings_id) {
-    const { error } = await service
-      .from('agency_settings')
-      .update(payload)
-      .eq('id', settings_id)
-    dbError = error
-  } else {
-    const { error } = await service
-      .from('agency_settings')
-      .upsert({ ...payload })
-    dbError = error
+  const doSave = async (data: Partial<typeof payload>) => {
+    if (settings_id) {
+      return service.from('agency_settings').update(data).eq('id', settings_id)
+    }
+    return service.from('agency_settings').upsert({ ...data })
+  }
+
+  let { error: dbError } = await doSave(payload)
+
+  // If timezone column missing (migration 016 not yet applied), retry without it
+  if (dbError?.message?.includes('timezone')) {
+    const { timezone: _tz, ...payloadWithoutTimezone } = payload
+    ;({ error: dbError } = await doSave(payloadWithoutTimezone))
   }
 
   if (dbError) return { error: `No se pudo guardar: ${dbError.message}` }
@@ -83,7 +84,7 @@ export async function updatePasswordAction(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'No autenticado' }
 
-  const nueva    = (formData.get('nueva')    as string)?.trim()
+  const nueva     = (formData.get('nueva')     as string)?.trim()
   const confirmar = (formData.get('confirmar') as string)?.trim()
 
   if (!nueva || nueva.length < 8) return { error: 'La contraseña debe tener al menos 8 caracteres.' }

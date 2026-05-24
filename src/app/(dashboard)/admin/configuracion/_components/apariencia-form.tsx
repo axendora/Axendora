@@ -19,11 +19,11 @@ export function AparienciaForm() {
 
   if (!mounted) {
     return (
-      <div className="rounded-xl border border-[#27272A] bg-[#121212] p-6 animate-pulse">
-        <div className="h-4 w-32 bg-[#27272A] rounded" />
+      <div className="rounded-xl border border-border bg-card p-6 animate-pulse">
+        <div className="h-4 w-32 bg-muted rounded" />
         <div className="mt-4 grid grid-cols-3 gap-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-24 rounded-xl bg-[#27272A]" />
+            <div key={i} className="h-24 rounded-xl bg-muted" />
           ))}
         </div>
       </div>
@@ -32,10 +32,10 @@ export function AparienciaForm() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-[#27272A] bg-[#121212] p-6 space-y-5">
+      <div className="rounded-xl border border-border bg-card p-6 space-y-5">
         <div>
-          <h3 className="text-sm font-semibold text-white">Tema de la interfaz</h3>
-          <p className="mt-0.5 text-xs text-[#71717A]">
+          <h3 className="text-sm font-semibold text-foreground">Tema de la interfaz</h3>
+          <p className="mt-0.5 text-xs text-muted-foreground">
             Selecciona cómo se mostrará el panel. El cambio se aplica de inmediato.
           </p>
         </div>
@@ -51,29 +51,29 @@ export function AparienciaForm() {
                 className={cn(
                   'relative flex flex-col items-center gap-3 rounded-xl border p-5 text-left transition-all duration-150',
                   isActive
-                    ? 'border-[#14A8B6] bg-[#14A8B6]/10'
-                    : 'border-[#27272A] hover:border-[#52525B] hover:bg-[#1A1A1A]',
+                    ? 'border-primary bg-[#14A8B6]/10'
+                    : 'border-border hover:border-[#52525B] hover:bg-secondary',
                 )}
               >
                 {isActive && (
                   <CheckCircle2
                     size={14}
-                    className="absolute right-3 top-3 text-[#14A8B6]"
+                    className="absolute right-3 top-3 text-primary"
                   />
                 )}
                 <div
                   className={cn(
                     'flex h-10 w-10 items-center justify-center rounded-full',
-                    isActive ? 'bg-[#14A8B6]/20 text-[#14A8B6]' : 'bg-[#27272A] text-[#71717A]',
+                    isActive ? 'bg-[#14A8B6]/20 text-primary' : 'bg-muted text-muted-foreground',
                   )}
                 >
                   <Icon size={20} />
                 </div>
                 <div className="text-center">
-                  <p className={cn('text-sm font-semibold', isActive ? 'text-[#14A8B6]' : 'text-white')}>
+                  <p className={cn('text-sm font-semibold', isActive ? 'text-primary' : 'text-foreground')}>
                     {label}
                   </p>
-                  <p className="mt-0.5 text-[11px] text-[#71717A]">{description}</p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">{description}</p>
                 </div>
               </button>
             )
@@ -81,9 +81,9 @@ export function AparienciaForm() {
         </div>
 
         {/* Active indicator */}
-        <p className="text-xs text-[#52525B]">
+        <p className="text-xs text-muted-foreground/60">
           Modo activo:{' '}
-          <span className="font-medium text-[#71717A] capitalize">{resolvedTheme}</span>
+          <span className="font-medium text-muted-foreground capitalize">{resolvedTheme}</span>
         </p>
       </div>
     </div>

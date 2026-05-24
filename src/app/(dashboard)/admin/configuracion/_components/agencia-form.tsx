@@ -9,10 +9,10 @@ import { cn } from '@/lib/utils'
 import type { AgencySettings } from '@/types/database.types'
 
 const INPUT =
-  'w-full rounded-lg border border-[#27272A] bg-[#0A0A0A] px-3 py-2 text-sm text-white placeholder:text-[#52525B] focus:outline-none focus:ring-2 focus:ring-[#14A8B6]/40 focus:border-[#14A8B6] transition-colors'
+  'w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors'
 
 const SELECT =
-  'w-full rounded-lg border border-[#27272A] bg-[#0A0A0A] px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#14A8B6]/40 focus:border-[#14A8B6] transition-colors'
+  'w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors'
 
 // ── Country codes ─────────────────────────────────────────────────────────────
 
@@ -80,8 +80,8 @@ export function AgenciaForm({ settings, settingsId }: Props) {
       )}
 
       {/* Info básica */}
-      <div className="rounded-xl border border-[#27272A] bg-[#121212] p-6 space-y-5">
-        <h3 className="text-sm font-semibold text-white">Información de la agencia</h3>
+      <div className="rounded-xl border border-border bg-card p-6 space-y-5">
+        <h3 className="text-sm font-semibold text-foreground">Información de la agencia</h3>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Nombre de la agencia" required>
             <input
@@ -146,10 +146,10 @@ export function AgenciaForm({ settings, settingsId }: Props) {
       </div>
 
       {/* Zona horaria */}
-      <div className="rounded-xl border border-[#27272A] bg-[#121212] p-6 space-y-4">
+      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
         <div>
-          <h3 className="text-sm font-semibold text-white">Zona horaria del sistema</h3>
-          <p className="mt-0.5 text-xs text-[#71717A]">
+          <h3 className="text-sm font-semibold text-foreground">Zona horaria del sistema</h3>
+          <p className="mt-0.5 text-xs text-muted-foreground">
             Todas las fechas y horas del CRM se mostrarán en esta zona horaria.
           </p>
         </div>
@@ -171,30 +171,30 @@ export function AgenciaForm({ settings, settingsId }: Props) {
       </div>
 
       {/* Redes sociales */}
-      <div className="rounded-xl border border-[#27272A] bg-[#121212] p-6 space-y-5">
-        <h3 className="text-sm font-semibold text-white">Redes sociales</h3>
+      <div className="rounded-xl border border-border bg-card p-6 space-y-5">
+        <h3 className="text-sm font-semibold text-foreground">Redes sociales</h3>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Instagram">
-            <div className="flex items-center rounded-lg border border-[#27272A] bg-[#0A0A0A] focus-within:ring-2 focus-within:ring-[#14A8B6]/40 focus-within:border-[#14A8B6] transition-colors overflow-hidden">
-              <span className="shrink-0 px-3 text-sm text-[#52525B] border-r border-[#27272A]">@</span>
+            <div className="flex items-center rounded-lg border border-border bg-background focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary transition-colors overflow-hidden">
+              <span className="shrink-0 px-3 text-sm text-muted-foreground/60 border-r border-border">@</span>
               <input
                 name="instagram"
                 type="text"
                 placeholder="axendora"
                 defaultValue={settings?.instagram ?? ''}
-                className="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder:text-[#52525B] focus:outline-none"
+                className="flex-1 bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
               />
             </div>
           </Field>
           <Field label="Facebook">
-            <div className="flex items-center rounded-lg border border-[#27272A] bg-[#0A0A0A] focus-within:ring-2 focus-within:ring-[#14A8B6]/40 focus-within:border-[#14A8B6] transition-colors overflow-hidden">
-              <span className="shrink-0 px-3 text-sm text-[#52525B] border-r border-[#27272A]">fb.com/</span>
+            <div className="flex items-center rounded-lg border border-border bg-background focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary transition-colors overflow-hidden">
+              <span className="shrink-0 px-3 text-sm text-muted-foreground/60 border-r border-border">fb.com/</span>
               <input
                 name="facebook"
                 type="text"
                 placeholder="axendora"
                 defaultValue={settings?.facebook ?? ''}
-                className="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder:text-[#52525B] focus:outline-none"
+                className="flex-1 bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
               />
             </div>
           </Field>
@@ -228,16 +228,16 @@ function PhoneInput({
   const [code, setCode] = useState(defaultCode)
 
   return (
-    <div className="flex rounded-lg border border-[#27272A] bg-[#0A0A0A] focus-within:ring-2 focus-within:ring-[#14A8B6]/40 focus-within:border-[#14A8B6] transition-colors overflow-hidden">
+    <div className="flex rounded-lg border border-border bg-background focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary transition-colors overflow-hidden">
       <select
         name={codeName}
         value={code}
         onChange={(e) => setCode(e.target.value)}
-        className="shrink-0 bg-transparent border-r border-[#27272A] px-2 py-2 text-sm text-white focus:outline-none cursor-pointer"
+        className="shrink-0 bg-transparent border-r border-border px-2 py-2 text-sm text-foreground focus:outline-none cursor-pointer"
         aria-label="Código de país"
       >
         {COUNTRY_CODES.map((c) => (
-          <option key={c.code} value={c.code} className="bg-[#0A0A0A]">
+          <option key={c.code} value={c.code} className="bg-background">
             {c.flag} {c.code}
           </option>
         ))}
@@ -247,7 +247,7 @@ function PhoneInput({
         type="tel"
         placeholder={placeholder}
         defaultValue={defaultNum}
-        className="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder:text-[#52525B] focus:outline-none min-w-0"
+        className="flex-1 bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none min-w-0"
       />
     </div>
   )
@@ -266,7 +266,7 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-sm font-medium text-[#A1A1AA]">
+      <label className="text-sm font-medium text-muted-foreground">
         {label}
         {required && <span className="ml-0.5 text-[#EF4444]">*</span>}
       </label>
@@ -302,13 +302,13 @@ function LiveClock({ timezone }: { timezone: string }) {
   return (
     <div className="flex items-center gap-3 rounded-lg border border-[#14A8B6]/20 bg-[#14A8B6]/5 px-4 py-3">
       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#14A8B6]/10">
-        <Clock size={15} className="text-[#14A8B6]" />
+        <Clock size={15} className="text-primary" />
       </div>
       <div className="min-w-0">
-        <p className="text-xs text-[#71717A]">
+        <p className="text-xs text-muted-foreground">
           Hora actual — {tzData?.flag} {tzData?.label ?? timezone} ({tzData?.offset})
         </p>
-        <p className="text-sm font-medium text-white capitalize tabular-nums">{formatted}</p>
+        <p className="text-sm font-medium text-foreground capitalize tabular-nums">{formatted}</p>
       </div>
     </div>
   )
