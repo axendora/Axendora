@@ -75,16 +75,12 @@ export default async function ClientePlanesPage() {
   // Si la tabla de ofertas no existe aún, degradar sin error
   const ofertas = (!ofertasRes.error ? (ofertasRes.data ?? []) : []) as OfertaActiva[]
 
-  // RPC opcional: si la función no existe, degradar sin WhatsApp
-  let whatsapp: string | null = null
-  try {
-    const wa = await (supabase as unknown as {
-      rpc: (fn: string) => Promise<{ data: string | null; error: unknown }>
-    }).rpc('get_admin_whatsapp')
-    whatsapp = wa.data ?? null
-  } catch {
-    whatsapp = null
-  }
+  const { data: agencyData } = await supabase
+    .from('agency_settings')
+    .select('whatsapp')
+    .limit(1)
+    .single()
+  const whatsapp: string | null = agencyData?.whatsapp ?? null
 
   if (planesError) {
     return (

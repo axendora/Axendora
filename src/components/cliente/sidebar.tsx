@@ -99,7 +99,7 @@ export function ClienteSidebar({ nombre, email, isOpen, onClose }: ClienteSideba
               alt="Axendora"
               width={120}
               height={36}
-              className="h-8 w-auto dark:brightness-100 brightness-0"
+              className="h-8 w-auto invert hue-rotate-180 dark:invert-0 dark:hue-rotate-0"
               priority
             />
           </Link>

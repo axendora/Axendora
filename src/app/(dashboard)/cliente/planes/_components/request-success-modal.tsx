@@ -17,6 +17,7 @@ interface RequestSuccessModalProps {
   ofertaTitulo?: string
   clientName: string
   whatsapp: string | null
+  waMsgOverride?: string
 }
 
 function fireConfetti() {
@@ -60,6 +61,7 @@ export function RequestSuccessModal({
   ofertaTitulo,
   clientName,
   whatsapp,
+  waMsgOverride,
 }: RequestSuccessModalProps) {
   const firedRef = useRef(false)
 
@@ -85,7 +87,7 @@ export function RequestSuccessModal({
 
   const diasTxt = duracionDias ? ` por ${duracionDias} días` : ''
   const ofertaTxt = ofertaTitulo ? ` (con oferta: ${ofertaTitulo})` : ''
-  const waMsg =
+  const waMsg = waMsgOverride ||
     `Hola Axendora, soy ${clientName}. Acabo de solicitar el plan "${planNombre}"${diasTxt}${ofertaTxt}. ` +
     `Quisiera coordinar el inicio del servicio. ¡Gracias!`
   const waLink = whatsapp ? buildWhatsAppLink(whatsapp, waMsg) : null
