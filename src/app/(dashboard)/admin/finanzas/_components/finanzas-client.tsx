@@ -3,18 +3,19 @@
 import { useState, useTransition, useMemo } from 'react'
 import {
   TrendingUp, TrendingDown, Scale, Plus, Trash2,
-  ChevronDown, Filter, ArrowUpCircle, ArrowDownCircle, CalendarRange, X,
+  ChevronDown, Filter, ArrowUpCircle, ArrowDownCircle, CalendarRange, X, FileSpreadsheet,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
 import { eliminarIngresoAction, eliminarGastoAction } from '../actions'
 import { EntradaModal } from './entrada-modal'
 import { CatIcon } from './icon-map'
+import { EstadoResultados } from './estado-resultados'
 import { toLocalDateKey, formatDate, formatDateTime } from '@/lib/timezone'
 import type { Ingreso, Gasto, IngresoCategoria, GastoCategoria } from '@/types/database.types'
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
-type Tab     = 'ingresos' | 'gastos'
+type Tab     = 'ingresos' | 'gastos' | 'resultados'
 type Periodo = 'hoy' | 'ayer' | 'semana' | 'mes' | 'todo'
 
 const PERIODOS: { value: Periodo; label: string }[] = [
@@ -219,254 +220,283 @@ export function FinanzasClient({ ingresos, gastos, ingresoCategorias, gastoCateg
       {/* ── Tabs + botón nuevo ──────────────────────────────────────────── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex rounded-xl border border-border bg-card p-1">
-          {(['ingresos', 'gastos'] as Tab[]).map((t) => (
-            <button
-              key={t}
-              onClick={() => onTabChange(t)}
-              className={cn(
-                'flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-medium capitalize transition-colors',
-                tab === t
-                  ? t === 'ingresos'
-                    ? 'bg-success/10 text-success'
-                    : 'bg-destructive/10 text-destructive'
-                  : 'text-muted-foreground hover:text-foreground',
-              )}
-            >
-              {t === 'ingresos' ? <ArrowUpCircle size={15} /> : <ArrowDownCircle size={15} />}
-              {t === 'ingresos' ? 'Ingresos' : 'Gastos'}
-              <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold">
-                {t === 'ingresos' ? ingresosFiltrados.length : gastosFiltrados.length}
-              </span>
-            </button>
-          ))}
+          <button
+            onClick={() => onTabChange('ingresos')}
+            className={cn(
+              'flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors',
+              tab === 'ingresos'
+                ? 'bg-success/10 text-success'
+                : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            <ArrowUpCircle size={15} />
+            Ingresos
+            <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold">
+              {ingresosFiltrados.length}
+            </span>
+          </button>
+          <button
+            onClick={() => onTabChange('gastos')}
+            className={cn(
+              'flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors',
+              tab === 'gastos'
+                ? 'bg-destructive/10 text-destructive'
+                : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            <ArrowDownCircle size={15} />
+            Gastos
+            <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold">
+              {gastosFiltrados.length}
+            </span>
+          </button>
+          <button
+            onClick={() => onTabChange('resultados')}
+            className={cn(
+              'flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors',
+              tab === 'resultados'
+                ? 'bg-primary/10 text-primary'
+                : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            <FileSpreadsheet size={15} />
+            <span className="hidden sm:inline">Estado de Resultados</span>
+            <span className="sm:hidden">Resultados</span>
+          </button>
         </div>
 
-        <button
-          onClick={() => setShowModal(true)}
-          className={cn(
-            buttonVariants({ size: 'sm' }),
-            'h-9 gap-2 shrink-0',
-            tab === 'ingresos'
-              ? 'bg-success border-success hover:bg-success/90'
-              : 'bg-destructive border-destructive hover:bg-destructive/90',
-          )}
-        >
-          <Plus size={14} />
-          {tab === 'ingresos' ? 'Nuevo ingreso' : 'Nuevo gasto'}
-        </button>
-      </div>
-
-      {/* ── Filter bar ──────────────────────────────────────────────────── */}
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-center gap-3">
-
-          {/* Período pills (desactivados cuando hay rango activo) */}
-          <div className="flex flex-wrap gap-1.5">
-            {PERIODOS.map((p) => (
-              <button
-                key={p.value}
-                onClick={() => selectPeriodo(p.value)}
-                className={cn(
-                  'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-                  !modoRango && periodo === p.value
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-border text-muted-foreground hover:border-primary/30 hover:text-foreground',
-                )}
-              >
-                {p.label}
-              </button>
-            ))}
-
-            {/* Rango pill */}
-            <button
-              onClick={activarRango}
-              className={cn(
-                'flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-                modoRango
-                  ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-border text-muted-foreground hover:border-primary/30 hover:text-foreground',
-              )}
-            >
-              <CalendarRange size={11} />
-              Rango
-            </button>
-          </div>
-
-          <div className="h-5 w-px bg-border" />
-
-          {/* Categoría dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => setShowCat(!showCatDropdown)}
-              className={cn(
-                'flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-                categoriaFiltro !== 'todas'
-                  ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-border text-muted-foreground hover:text-foreground',
-              )}
-            >
-              <Filter size={11} />
-              {catFiltroNombre ?? 'Categoría'}
-              <ChevronDown size={10} className={cn('transition-transform', showCatDropdown && 'rotate-180')} />
-            </button>
-
-            {showCatDropdown && (
-              <div className="absolute left-0 top-full z-20 mt-1 w-48 overflow-hidden rounded-xl border border-border bg-card shadow-lg">
-                <button
-                  onClick={() => { setCatFiltro('todas'); setShowCat(false) }}
-                  className={cn('flex w-full items-center gap-2 px-3 py-2 text-xs hover:bg-muted/50', categoriaFiltro === 'todas' && 'text-primary')}
-                >
-                  Todas las categorías
-                </button>
-                {categorias.map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => { setCatFiltro(c.id); setShowCat(false) }}
-                    className={cn('flex w-full items-center gap-2 px-3 py-2 text-xs hover:bg-muted/50', categoriaFiltro === c.id && 'text-primary')}
-                  >
-                    <CatIcon nombre={c.icono} color={c.color} size={12} />
-                    {c.nombre}
-                  </button>
-                ))}
-              </div>
+        {tab !== 'resultados' && (
+          <button
+            onClick={() => setShowModal(true)}
+            className={cn(
+              buttonVariants({ size: 'sm' }),
+              'h-9 gap-2 shrink-0',
+              tab === 'ingresos'
+                ? 'bg-success border-success hover:bg-success/90'
+                : 'bg-destructive border-destructive hover:bg-destructive/90',
             )}
-          </div>
-
-          {/* Limpiar */}
-          {hayFiltros && (
-            <button
-              onClick={limpiarFiltros}
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
-            >
-              <X size={11} />
-              Limpiar
-            </button>
-          )}
-        </div>
-
-        {/* Rango de fechas — se muestra solo cuando está activo */}
-        {modoRango && (
-          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
-            <CalendarRange size={14} className="shrink-0 text-primary" />
-            <span className="text-xs font-medium text-primary">Rango personalizado</span>
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-1.5">
-                <label className="text-[11px] text-muted-foreground">Desde</label>
-                <input
-                  type="date"
-                  value={rangoDesde}
-                  max={rangoHasta || undefined}
-                  onChange={(e) => setRangoDesde(e.target.value)}
-                  className="rounded-lg border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30"
-                />
-              </div>
-              <div className="flex items-center gap-1.5">
-                <label className="text-[11px] text-muted-foreground">Hasta</label>
-                <input
-                  type="date"
-                  value={rangoHasta}
-                  min={rangoDesde || undefined}
-                  onChange={(e) => setRangoHasta(e.target.value)}
-                  className="rounded-lg border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30"
-                />
-              </div>
-            </div>
-            {(rangoDesde || rangoHasta) && (
-              <button
-                onClick={() => { setRangoDesde(''); setRangoHasta('') }}
-                className="ml-auto text-[11px] text-muted-foreground hover:text-destructive"
-              >
-                Borrar fechas
-              </button>
-            )}
-          </div>
+          >
+            <Plus size={14} />
+            {tab === 'ingresos' ? 'Nuevo ingreso' : 'Nuevo gasto'}
+          </button>
         )}
       </div>
 
-      {/* ── Lista ───────────────────────────────────────────────────────── */}
-      {lista.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card py-16 text-center">
-          {tab === 'ingresos'
-            ? <ArrowUpCircle size={36} className="mb-3 text-muted-foreground/20" />
-            : <ArrowDownCircle size={36} className="mb-3 text-muted-foreground/20" />
-          }
-          <p className="text-sm font-medium">Sin {tab} en este período</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Cambia el período o registra un nuevo {tab === 'ingresos' ? 'ingreso' : 'gasto'}.
-          </p>
-        </div>
-      ) : (
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
-          <div className="hidden grid-cols-[1fr_auto_auto_auto] items-center gap-4 border-b border-border px-5 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground sm:grid">
-            <span>Descripción</span>
-            <span>Fecha</span>
-            <span className="text-right">Monto</span>
-            <span />
-          </div>
-
-          <div className="divide-y divide-border">
-            {lista.map((entry) => {
-              const cat = entry.categoria
-              const { fecha, hora } = formatFecha(entry.fecha, timezone)
-              return (
-                <div key={entry.id} className="flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-muted/20">
-                  <div
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                    style={{ backgroundColor: cat ? `${cat.color}18` : '#1FA8B818' }}
+      {/* ── Filter bar + Lista (ocultos en tab Resultados) ──────────────── */}
+      {tab !== 'resultados' && (
+        <>
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Período pills */}
+              <div className="flex flex-wrap gap-1.5">
+                {PERIODOS.map((p) => (
+                  <button
+                    key={p.value}
+                    onClick={() => selectPeriodo(p.value)}
+                    className={cn(
+                      'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                      !modoRango && periodo === p.value
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border text-muted-foreground hover:border-primary/30 hover:text-foreground',
+                    )}
                   >
-                    <CatIcon nombre={cat?.icono ?? 'Tag'} color={cat?.color ?? '#1FA8B8'} size={16} />
-                  </div>
+                    {p.label}
+                  </button>
+                ))}
+                <button
+                  onClick={activarRango}
+                  className={cn(
+                    'flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                    modoRango
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border text-muted-foreground hover:border-primary/30 hover:text-foreground',
+                  )}
+                >
+                  <CalendarRange size={11} />
+                  Rango
+                </button>
+              </div>
 
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{entry.titulo}</p>
-                    <div className="mt-0.5 flex items-center gap-2">
-                      {cat && (
-                        <span
-                          className="rounded-full px-2 py-0.5 text-[10px] font-medium"
-                          style={{ backgroundColor: `${cat.color}18`, color: cat.color }}
-                        >
-                          {cat.nombre}
-                        </span>
-                      )}
-                      {entry.descripcion && (
-                        <span className="truncate text-[11px] text-muted-foreground">{entry.descripcion}</span>
-                      )}
-                    </div>
-                  </div>
+              <div className="h-5 w-px bg-border" />
 
-                  <div className="hidden shrink-0 text-right text-xs text-muted-foreground sm:block">
-                    <p>{fecha}</p>
-                    {hora && <p className="text-[11px] opacity-70">{hora}</p>}
+              {/* Categoría dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowCat(!showCatDropdown)}
+                  className={cn(
+                    'flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                    categoriaFiltro !== 'todas'
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  <Filter size={11} />
+                  {catFiltroNombre ?? 'Categoría'}
+                  <ChevronDown size={10} className={cn('transition-transform', showCatDropdown && 'rotate-180')} />
+                </button>
+                {showCatDropdown && (
+                  <div className="absolute left-0 top-full z-20 mt-1 w-48 overflow-hidden rounded-xl border border-border bg-card shadow-lg">
+                    <button
+                      onClick={() => { setCatFiltro('todas'); setShowCat(false) }}
+                      className={cn('flex w-full items-center gap-2 px-3 py-2 text-xs hover:bg-muted/50', categoriaFiltro === 'todas' && 'text-primary')}
+                    >
+                      Todas las categorías
+                    </button>
+                    {categorias.map((c) => (
+                      <button
+                        key={c.id}
+                        onClick={() => { setCatFiltro(c.id); setShowCat(false) }}
+                        className={cn('flex w-full items-center gap-2 px-3 py-2 text-xs hover:bg-muted/50', categoriaFiltro === c.id && 'text-primary')}
+                      >
+                        <CatIcon nombre={c.icono} color={c.color} size={12} />
+                        {c.nombre}
+                      </button>
+                    ))}
                   </div>
+                )}
+              </div>
 
-                  <div className="shrink-0 text-right">
-                    <p className={cn('text-sm font-bold', tab === 'ingresos' ? 'text-success' : 'text-destructive')}>
-                      {tab === 'ingresos' ? '+' : '−'} {formatUSD(entry.monto)}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground sm:hidden">{fecha}</p>
+              {hayFiltros && (
+                <button
+                  onClick={limpiarFiltros}
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
+                >
+                  <X size={11} />
+                  Limpiar
+                </button>
+              )}
+            </div>
+
+            {modoRango && (
+              <div className="flex flex-wrap items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
+                <CalendarRange size={14} className="shrink-0 text-primary" />
+                <span className="text-xs font-medium text-primary">Rango personalizado</span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <label className="text-[11px] text-muted-foreground">Desde</label>
+                    <input
+                      type="date"
+                      value={rangoDesde}
+                      max={rangoHasta || undefined}
+                      onChange={(e) => setRangoDesde(e.target.value)}
+                      className="rounded-lg border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    />
                   </div>
-
-                  <DeleteBtn id={entry.id} tipo={tab} />
+                  <div className="flex items-center gap-1.5">
+                    <label className="text-[11px] text-muted-foreground">Hasta</label>
+                    <input
+                      type="date"
+                      value={rangoHasta}
+                      min={rangoDesde || undefined}
+                      onChange={(e) => setRangoHasta(e.target.value)}
+                      className="rounded-lg border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    />
+                  </div>
                 </div>
-              )
-            })}
+                {(rangoDesde || rangoHasta) && (
+                  <button
+                    onClick={() => { setRangoDesde(''); setRangoHasta('') }}
+                    className="ml-auto text-[11px] text-muted-foreground hover:text-destructive"
+                  >
+                    Borrar fechas
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Total bar */}
-          <div className={cn(
-            'flex items-center justify-between border-t border-border px-5 py-3',
-            tab === 'ingresos' ? 'bg-success/5' : 'bg-destructive/5',
-          )}>
-            <span className="text-xs font-medium text-muted-foreground">
-              Total · {lista.length} registro{lista.length !== 1 ? 's' : ''}
-              {categoriaFiltro !== 'todas' && ` · ${catFiltroNombre}`}
-              {` · ${periodoLabel}`}
-            </span>
-            <span className={cn('text-base font-bold', tab === 'ingresos' ? 'text-success' : 'text-destructive')}>
-              {tab === 'ingresos' ? '+' : '−'} {formatUSD(totalFiltrado)}
-            </span>
-          </div>
-        </div>
+          {/* ── Lista ─────────────────────────────────────────────────────── */}
+          {lista.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card py-16 text-center">
+              {tab === 'ingresos'
+                ? <ArrowUpCircle size={36} className="mb-3 text-muted-foreground/20" />
+                : <ArrowDownCircle size={36} className="mb-3 text-muted-foreground/20" />
+              }
+              <p className="text-sm font-medium">Sin {tab} en este período</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Cambia el período o registra un nuevo {tab === 'ingresos' ? 'ingreso' : 'gasto'}.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-hidden rounded-xl border border-border bg-card">
+              <div className="hidden grid-cols-[1fr_auto_auto_auto] items-center gap-4 border-b border-border px-5 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground sm:grid">
+                <span>Descripción</span>
+                <span>Fecha</span>
+                <span className="text-right">Monto</span>
+                <span />
+              </div>
+              <div className="divide-y divide-border">
+                {lista.map((entry) => {
+                  const cat = entry.categoria
+                  const { fecha, hora } = formatFecha(entry.fecha, timezone)
+                  return (
+                    <div key={entry.id} className="flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-muted/20">
+                      <div
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                        style={{ backgroundColor: cat ? `${cat.color}18` : '#1FA8B818' }}
+                      >
+                        <CatIcon nombre={cat?.icono ?? 'Tag'} color={cat?.color ?? '#1FA8B8'} size={16} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{entry.titulo}</p>
+                        <div className="mt-0.5 flex items-center gap-2">
+                          {cat && (
+                            <span
+                              className="rounded-full px-2 py-0.5 text-[10px] font-medium"
+                              style={{ backgroundColor: `${cat.color}18`, color: cat.color }}
+                            >
+                              {cat.nombre}
+                            </span>
+                          )}
+                          {entry.descripcion && (
+                            <span className="truncate text-[11px] text-muted-foreground">{entry.descripcion}</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="hidden shrink-0 text-right text-xs text-muted-foreground sm:block">
+                        <p>{fecha}</p>
+                        {hora && <p className="text-[11px] opacity-70">{hora}</p>}
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p className={cn('text-sm font-bold', tab === 'ingresos' ? 'text-success' : 'text-destructive')}>
+                          {tab === 'ingresos' ? '+' : '−'} {formatUSD(entry.monto)}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground sm:hidden">{fecha}</p>
+                      </div>
+                      <DeleteBtn id={entry.id} tipo={tab} />
+                    </div>
+                  )
+                })}
+              </div>
+              <div className={cn(
+                'flex items-center justify-between border-t border-border px-5 py-3',
+                tab === 'ingresos' ? 'bg-success/5' : 'bg-destructive/5',
+              )}>
+                <span className="text-xs font-medium text-muted-foreground">
+                  Total · {lista.length} registro{lista.length !== 1 ? 's' : ''}
+                  {categoriaFiltro !== 'todas' && ` · ${catFiltroNombre}`}
+                  {` · ${periodoLabel}`}
+                </span>
+                <span className={cn('text-base font-bold', tab === 'ingresos' ? 'text-success' : 'text-destructive')}>
+                  {tab === 'ingresos' ? '+' : '−'} {formatUSD(totalFiltrado)}
+                </span>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ── Estado de Resultados ────────────────────────────────────────── */}
+      {tab === 'resultados' && (
+        <EstadoResultados
+          ingresos={ingresosFiltrados}
+          gastos={gastosFiltrados}
+          timezone={timezone}
+          periodo={periodo}
+          modoRango={modoRango}
+          rangoDesde={rangoDesde}
+          rangoHasta={rangoHasta}
+        />
       )}
 
       {/* ── Modal ───────────────────────────────────────────────────────── */}
