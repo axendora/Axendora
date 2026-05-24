@@ -92,7 +92,9 @@ export function PlanCard({ plan, oferta, whatsapp, clientName }: PlanCardProps) 
   const copCambio  = oferta !== null && copRawDesc !== plan.precio_cop
 
   const waMsg = `Hola Axendora, me interesa el plan "${plan.nombre}". ¿Me puedes dar más información?`
-  const waLink = whatsapp ? buildWhatsAppLink(whatsapp, waMsg) : null
+  const waLink = whatsapp
+    ? buildWhatsAppLink(whatsapp, waMsg)
+    : `https://wa.me/?text=${encodeURIComponent(waMsg)}`
 
   useEffect(() => {
     if (state && 'success' in state && state.success) {
@@ -232,16 +234,14 @@ export function PlanCard({ plan, oferta, whatsapp, clientName }: PlanCardProps) 
               {oferta && <input type="hidden" name="oferta_id" value={oferta.id} />}
               <ContratarButton />
             </form>
-            {waLink && (
-              <a href={waLink} target="_blank" rel="noopener noreferrer"
-                title="Contactar por WhatsApp"
-                className={cn(
-                  buttonVariants({ variant: 'outline', size: 'sm' }),
-                  'h-9 w-9 p-0 border-green-600/30 text-green-500 hover:bg-green-500/10 hover:text-green-400',
-                )}>
-                <WhatsAppIcon size={16} />
-              </a>
-            )}
+            <a href={waLink} target="_blank" rel="noopener noreferrer"
+              title="Contactar por WhatsApp"
+              className={cn(
+                buttonVariants({ variant: 'outline', size: 'sm' }),
+                'h-9 w-9 p-0 border-green-600/30 text-green-500 hover:bg-green-500/10 hover:text-green-400',
+              )}>
+              <WhatsAppIcon size={16} />
+            </a>
           </div>
           <span className="sr-only">{tipoPrecioLabel(plan.tipo_precio)}</span>
         </div>
