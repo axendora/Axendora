@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { getAgencyTimezone, formatDate, formatRelative } from '@/lib/timezone'
+import { getAgencyTimezone } from '@/lib/timezone.server'
+import { formatDate, formatRelative } from '@/lib/timezone'
 import Link from 'next/link'
 import {
   Users,

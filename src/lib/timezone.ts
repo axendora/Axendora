@@ -1,6 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
-
-// ── Lista de zonas horarias soportadas ────────────────────────────────────────
+// Pure timezone utilities — safe for client AND server components.
+// For server-only getAgencyTimezone(), import from '@/lib/timezone.server'
 
 export type TimezoneOption = {
   value: string
@@ -26,24 +25,6 @@ export const TIMEZONES: TimezoneOption[] = [
 ]
 
 export const DEFAULT_TIMEZONE = 'America/Caracas'
-
-// ── Función servidor: obtener timezone guardado ───────────────────────────────
-
-export async function getAgencyTimezone(): Promise<string> {
-  try {
-    const supabase = await createClient()
-    const { data } = await supabase
-      .from('agency_settings')
-      .select('timezone')
-      .limit(1)
-      .single()
-    return data?.timezone ?? DEFAULT_TIMEZONE
-  } catch {
-    return DEFAULT_TIMEZONE
-  }
-}
-
-// ── Utilidades de formateo ────────────────────────────────────────────────────
 
 export function formatDate(
   dateInput: string | Date,
@@ -108,7 +89,6 @@ export function formatRelative(
   const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput
   if (isNaN(date.getTime())) return '—'
 
-  // "now" expressed in the target timezone for an accurate diff
   const nowInTz = new Date(
     new Date().toLocaleString('en-US', { timeZone: timezone }),
   )
@@ -124,7 +104,6 @@ export function formatRelative(
   return formatDate(date, timezone)
 }
 
-/** Devuelve YYYY-MM-DD en la zona horaria indicada (útil para agrupar por día) */
 export function toLocalDateKey(
   dateInput: string | Date,
   timezone: string = DEFAULT_TIMEZONE,
@@ -140,7 +119,6 @@ export function toLocalDateKey(
   return `${get('year')}-${get('month')}-${get('day')}`
 }
 
-/** Devuelve YYYY-MM (mes local) para agrupar por mes */
 export function toLocalMonthKey(
   dateInput: string | Date,
   timezone: string = DEFAULT_TIMEZONE,

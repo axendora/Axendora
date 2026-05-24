@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { getAgencyTimezone, formatDate as tzFormatDate } from '@/lib/timezone'
+import { getAgencyTimezone } from '@/lib/timezone.server'
+import { formatDate as tzFormatDate } from '@/lib/timezone'
 import Link from 'next/link'
 import { Receipt, Plus, CalendarDays, AlertTriangle, CheckCircle2, Clock, Ban } from 'lucide-react'
 import { cn } from '@/lib/utils'

@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { getAgencyTimezone } from '@/lib/timezone'
+import { getAgencyTimezone } from '@/lib/timezone.server'
 import { FinanzasClient } from './_components/finanzas-client'
 import type { Ingreso, Gasto, IngresoCategoria, GastoCategoria } from '@/types/database.types'
 

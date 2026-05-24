@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { getAgencyTimezone, toLocalMonthKey, formatShortMonth } from '@/lib/timezone'
+import { getAgencyTimezone } from '@/lib/timezone.server'
+import { toLocalMonthKey, formatShortMonth } from '@/lib/timezone'
 import { SolicitudesEstadoChart } from '@/components/dashboard/charts/solicitudes-estado-chart'
 import { SolicitudesMesChart } from '@/components/dashboard/charts/solicitudes-mes-chart'
 import { ClientesMesChart } from '@/components/dashboard/charts/clientes-mes-chart'
