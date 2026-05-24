@@ -8,6 +8,50 @@ export type TipoPrecio = 'mensual' | 'unico'
 export type FacturaEstado = 'pendiente' | 'pagada' | 'vencida' | 'cancelada'
 export type MonedaTipo = 'USD' | 'COP'
 
+// ── Finanzas ──────────────────────────────────────────────
+export type IngresoCategoria = {
+  id: string
+  nombre: string
+  icono: string
+  color: string
+  sistema: boolean
+  orden: number
+  created_at: string
+}
+
+export type GastoCategoria = {
+  id: string
+  nombre: string
+  icono: string
+  color: string
+  sistema: boolean
+  orden: number
+  created_at: string
+}
+
+export type Ingreso = {
+  id: string
+  titulo: string
+  descripcion: string | null
+  monto: number
+  categoria_id: string | null
+  client_service_id: string | null
+  fecha: string
+  created_at: string
+  categoria?: IngresoCategoria | null
+}
+
+export type Gasto = {
+  id: string
+  titulo: string
+  descripcion: string | null
+  monto: number
+  categoria_id: string | null
+  fecha: string
+  created_at: string
+  categoria?: GastoCategoria | null
+}
+
 export type Database = {
   public: {
     Tables: {
@@ -264,6 +308,121 @@ export type Database = {
           fecha_pago?: string | null
           notas?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      ingreso_categorias: {
+        Row: {
+          id: string
+          nombre: string
+          icono: string
+          color: string
+          sistema: boolean
+          orden: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          nombre: string
+          icono?: string
+          color?: string
+          sistema?: boolean
+          orden?: number
+          created_at?: string
+        }
+        Update: {
+          nombre?: string
+          icono?: string
+          color?: string
+          sistema?: boolean
+          orden?: number
+        }
+        Relationships: []
+      }
+      gasto_categorias: {
+        Row: {
+          id: string
+          nombre: string
+          icono: string
+          color: string
+          sistema: boolean
+          orden: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          nombre: string
+          icono?: string
+          color?: string
+          sistema?: boolean
+          orden?: number
+          created_at?: string
+        }
+        Update: {
+          nombre?: string
+          icono?: string
+          color?: string
+          sistema?: boolean
+          orden?: number
+        }
+        Relationships: []
+      }
+      ingresos: {
+        Row: {
+          id: string
+          titulo: string
+          descripcion: string | null
+          monto: number
+          categoria_id: string | null
+          client_service_id: string | null
+          fecha: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          titulo: string
+          descripcion?: string | null
+          monto: number
+          categoria_id?: string | null
+          client_service_id?: string | null
+          fecha?: string
+          created_at?: string
+        }
+        Update: {
+          titulo?: string
+          descripcion?: string | null
+          monto?: number
+          categoria_id?: string | null
+          client_service_id?: string | null
+          fecha?: string
+        }
+        Relationships: []
+      }
+      gastos: {
+        Row: {
+          id: string
+          titulo: string
+          descripcion: string | null
+          monto: number
+          categoria_id: string | null
+          fecha: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          titulo: string
+          descripcion?: string | null
+          monto: number
+          categoria_id?: string | null
+          fecha?: string
+          created_at?: string
+        }
+        Update: {
+          titulo?: string
+          descripcion?: string | null
+          monto?: number
+          categoria_id?: string | null
+          fecha?: string
         }
         Relationships: []
       }

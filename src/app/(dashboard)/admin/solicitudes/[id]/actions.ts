@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { sendSolicitudAprobada, sendSolicitudRechazada } from '@/lib/email'
+import { autoCrearIngreso } from '@/app/(dashboard)/admin/finanzas/actions'
 import type { SolicitudEstado, SolicitudPrioridad } from '@/types/database.types'
 
 export async function updateSolicitudAction(
@@ -46,12 +47,12 @@ export async function aprobarSolicitudAction(
   // Aprobar = aceptar gestionar. La campaña queda EN CONFIGURACIÓN
   // sin fechas. El countdown empieza cuando el admin la ACTIVE desde
   // la sección Campañas (ahí se setean fecha_inicio y fecha_fin).
-  const { error: csErr } = await supabase.from('client_services').insert({
+  const { data: csData, error: csErr } = await supabase.from('client_services').insert({
     client_id: solicitud.client_id,
     plan_id,
     estado: 'en_configuracion',
     duracion_dias: duracion,
-  })
+  }).select('id').single()
 
   if (csErr) return { error: csErr.message }
 
@@ -62,11 +63,11 @@ export async function aprobarSolicitudAction(
 
   if (updErr) return { error: updErr.message }
 
-  // Email al cliente — fire and forget
+  // Email + ingreso automático — fire and forget
   const [{ data: perfil }, { data: plan }] = await Promise.all([
     supabase.from('profiles').select('nombre, email').eq('user_id', solicitud.client_id).single(),
     plan_id
-      ? supabase.from('plans').select('nombre').eq('id', plan_id).single()
+      ? supabase.from('plans').select('nombre, categoria, precio_usd').eq('id', plan_id).single()
       : Promise.resolve({ data: null }),
   ])
   if (perfil?.email) {
@@ -76,6 +77,14 @@ export async function aprobarSolicitudAction(
       planNombre: plan?.nombre ?? 'tu plan',
       duracionDias: duracion,
     }).catch((e) => console.error('[email] aprobar:', e))
+  }
+  if (plan && csData?.id) {
+    autoCrearIngreso({
+      titulo:            plan.nombre,
+      monto:             plan.precio_usd ?? 0,
+      categoria:         plan.categoria,
+      client_service_id: csData.id,
+    }).catch((e) => console.error('[finanzas] autoCrearIngreso:', e))
   }
 
   revalidatePath(`/admin/solicitudes/${id}`)

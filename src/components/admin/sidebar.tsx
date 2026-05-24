@@ -13,6 +13,7 @@ import {
   Megaphone,
   BarChart2,
   DollarSign,
+  TrendingUp,
   Headphones,
   Settings,
   LogOut,
@@ -44,6 +45,7 @@ const NAV_GROUPS = [
     items: [
       { href: '/admin/reportes',    label: 'Reportes',    icon: BarChart2,   exact: false },
       { href: '/admin/facturacion', label: 'Facturación', icon: DollarSign,  exact: false },
+      { href: '/admin/finanzas',    label: 'Finanzas',    icon: TrendingUp,  exact: false },
     ],
   },
   {
