@@ -20,7 +20,25 @@
       "Bash(pnpm exec *)",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k:v for k,v in {**d.get\\('dependencies',{}\\),**d.get\\('devDependencies',{}\\)}.items\\(\\) if 'recharts' in k}, indent=2\\)\\)\")",
+      "Bash(netstat -ano)",
+      "Bash(findstr :3000)",
+      "Bash(tasklist)",
+      "Bash(findstr /i \"node\")",
+      "PowerShell(pnpm dev *)",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:3000/admin\" -UseBasicParsing -MaximumRedirection 0 -ErrorAction Stop; \"Status: $\\($r.StatusCode\\)\" } catch { \"Status: $\\($_.Exception.Response.StatusCode.value__\\)`nLocation: $\\($_.Exception.Response.Headers.Location\\)\" })",
+      "Bash(findstr /i env)",
+      "Bash(git check-ignore *)",
+      "PowerShell(Remove-Item *)",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:3000/admin\" -UseBasicParsing -MaximumRedirection 0 -ErrorAction Stop; \"Status: $\\($r.StatusCode\\)\" } catch { $code = $_.Exception.Response.StatusCode.value__; $loc = $_.Exception.Response.Headers.Location; \"Status: $code`nLocation: $loc\" })",
+      "PowerShell($urls = @\\(\"http://localhost:3000/\", \"http://localhost:3000/login\", \"http://localhost:3000/registro\"\\); foreach \\($u in $urls\\) { try { $r = Invoke-WebRequest -Uri $u -UseBasicParsing -MaximumRedirection 0 -ErrorAction Stop; \"$u -> $\\($r.StatusCode\\)\" } catch { $code = $_.Exception.Response.StatusCode.value__; \"$u -> $code\" } })",
+      "PowerShell($url = \"https://cialgbifsojmjmaqbvar.supabase.co/rest/v1/rpc/is_admin\"; $key = \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNpYWxnYmlmc29qbWptYXFidmFyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTE1MzAzMiwiZXhwIjoyMDk0NzI5MDMyfQ.cJ73Z2uKBkrMU8KQTK0VVSNnEWlH4w9UnF1GWDptxd0\"; try { $r = Invoke-WebRequest -Uri $url -Method POST -Headers @{\"apikey\"=$key; \"Authorization\"=\"Bearer $key\"; \"Content-Type\"=\"application/json\"} -Body \"{}\" -UseBasicParsing -ErrorAction Stop; \"is_admin function exists. Response: $\\($r.Content\\)\" } catch { \"is_admin check failed: $\\($_.Exception.Message\\). Body: $\\($_.ErrorDetails.Message\\)\" })",
+      "PowerShell($urls = @\\(\"http://localhost:3000/admin\", \"http://localhost:3000/admin/clientes\", \"http://localhost:3000/admin/reportes\"\\); foreach \\($u in $urls\\) { try { $r = Invoke-WebRequest -Uri $u -UseBasicParsing -MaximumRedirection 0 -ErrorAction Stop; \"$u -> $\\($r.StatusCode\\)\" } catch { $code = $_.Exception.Response.StatusCode.value__; \"$u -> $code\" } })",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k:v for k,v in d.get\\('dependencies',{}\\).items\\(\\)}, indent=2\\)\\)\")",
+      "Bash(npx next *)",
+      "Bash(curl -s http://localhost:3002/ -o /dev/null -w \"%{http_code}\")",
+      "Bash(npx tsc *)"
     ]
   }
 }

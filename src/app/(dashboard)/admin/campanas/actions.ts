@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { sendCampanaIniciada } from '@/lib/email'
 import type { ServiceEstado } from '@/types/database.types'
 
 /**
@@ -29,7 +30,7 @@ export async function activarCampanaAction(
 
   const { data: cs, error: fetchErr } = await supabase
     .from('client_services')
-    .select('client_id')
+    .select('client_id, plan_id')
     .eq('id', id)
     .single()
 
@@ -46,6 +47,24 @@ export async function activarCampanaAction(
     .eq('id', id)
 
   if (error) return { error: error.message }
+
+  // Email al cliente — fire and forget
+  const [{ data: perfil }, { data: plan }] = await Promise.all([
+    supabase.from('profiles').select('nombre, email').eq('user_id', cs.client_id).single(),
+    cs.plan_id
+      ? supabase.from('plans').select('nombre').eq('id', cs.plan_id).single()
+      : Promise.resolve({ data: null }),
+  ])
+  if (perfil?.email) {
+    sendCampanaIniciada({
+      to: perfil.email,
+      nombre: perfil.nombre,
+      planNombre: plan?.nombre ?? 'tu plan',
+      duracionDias: duracion,
+      fechaInicio: fecha_inicio,
+      fechaFin: fecha_fin,
+    }).catch((e) => console.error('[email] campana iniciada:', e))
+  }
 
   revalidatePath('/admin/campanas')
   revalidatePath(`/admin/clientes/${cs.client_id}`)

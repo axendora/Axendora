@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { sendSolicitudAprobada, sendSolicitudRechazada } from '@/lib/email'
 import type { SolicitudEstado, SolicitudPrioridad } from '@/types/database.types'
 
 export async function updateSolicitudAction(formData: FormData) {
@@ -58,6 +59,22 @@ export async function aprobarSolicitudAction(
 
   if (updErr) return { error: updErr.message }
 
+  // Email al cliente — fire and forget
+  const [{ data: perfil }, { data: plan }] = await Promise.all([
+    supabase.from('profiles').select('nombre, email').eq('user_id', solicitud.client_id).single(),
+    plan_id
+      ? supabase.from('plans').select('nombre').eq('id', plan_id).single()
+      : Promise.resolve({ data: null }),
+  ])
+  if (perfil?.email) {
+    sendSolicitudAprobada({
+      to: perfil.email,
+      nombre: perfil.nombre,
+      planNombre: plan?.nombre ?? 'tu plan',
+      duracionDias: duracion,
+    }).catch((e) => console.error('[email] aprobar:', e))
+  }
+
   revalidatePath(`/admin/solicitudes/${id}`)
   revalidatePath('/admin/solicitudes')
   revalidatePath('/admin/campanas')
@@ -74,12 +91,38 @@ export async function rechazarSolicitudAction(
   if (!motivo_rechazo) return { error: 'El motivo es obligatorio' }
 
   const supabase = await createClient()
+
+  // Fetch client + plan info needed for the email before updating
+  const { data: sol } = await supabase
+    .from('solicitudes')
+    .select('client_id, plan_id')
+    .eq('id', id)
+    .single()
+
   const { error } = await supabase
     .from('solicitudes')
     .update({ estado: 'rechazada', motivo_rechazo })
     .eq('id', id)
 
   if (error) return { error: error.message }
+
+  // Email al cliente — fire and forget
+  if (sol?.client_id) {
+    const [{ data: perfil }, { data: plan }] = await Promise.all([
+      supabase.from('profiles').select('nombre, email').eq('user_id', sol.client_id).single(),
+      sol.plan_id
+        ? supabase.from('plans').select('nombre').eq('id', sol.plan_id).single()
+        : Promise.resolve({ data: null }),
+    ])
+    if (perfil?.email) {
+      sendSolicitudRechazada({
+        to: perfil.email,
+        nombre: perfil.nombre,
+        planNombre: plan?.nombre ?? 'tu plan',
+        motivo: motivo_rechazo,
+      }).catch((e) => console.error('[email] rechazar:', e))
+    }
+  }
 
   revalidatePath(`/admin/solicitudes/${id}`)
   revalidatePath('/admin/solicitudes')
