@@ -1,6 +1,6 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { updateSolicitudAction } from '../actions'
@@ -27,10 +27,13 @@ interface UpdateSolicitudFormProps {
 
 export function UpdateSolicitudForm({ id, currentEstado, currentPrioridad }: UpdateSolicitudFormProps) {
   const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
 
   function handleSubmit(formData: FormData) {
+    setError(null)
     startTransition(async () => {
-      await updateSolicitudAction(formData)
+      const res = await updateSolicitudAction(formData)
+      if (res?.error) setError(res.error)
     })
   }
 
@@ -70,6 +73,12 @@ export function UpdateSolicitudForm({ id, currentEstado, currentPrioridad }: Upd
           </select>
         </div>
       </div>
+
+      {error && (
+        <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+          {error}
+        </p>
+      )}
 
       <button
         type="submit"

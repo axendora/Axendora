@@ -5,7 +5,9 @@ import { revalidatePath } from 'next/cache'
 import { sendSolicitudAprobada, sendSolicitudRechazada } from '@/lib/email'
 import type { SolicitudEstado, SolicitudPrioridad } from '@/types/database.types'
 
-export async function updateSolicitudAction(formData: FormData) {
+export async function updateSolicitudAction(
+  formData: FormData,
+): Promise<{ error?: string }> {
   const id = formData.get('id') as string
   const estado = formData.get('estado') as SolicitudEstado
   const prioridad = formData.get('prioridad') as SolicitudPrioridad
@@ -16,10 +18,11 @@ export async function updateSolicitudAction(formData: FormData) {
     .update({ estado, prioridad })
     .eq('id', id)
 
-  if (error) throw new Error(error.message)
+  if (error) return { error: error.message }
   revalidatePath(`/admin/solicitudes/${id}`)
   revalidatePath('/admin/solicitudes')
   revalidatePath('/admin')
+  return {}
 }
 
 export async function aprobarSolicitudAction(

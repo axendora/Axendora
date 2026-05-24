@@ -1,6 +1,9 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Lazy init: si RESEND_API_KEY no está configurada no se lanza excepción al importar.
+// Los emails se omiten silenciosamente hasta que la key sea provista.
+const API_KEY = process.env.RESEND_API_KEY
+const resend  = API_KEY ? new Resend(API_KEY) : null
 
 const FROM  = process.env.RESEND_FROM  ?? 'Axendora <onboarding@resend.dev>'
 const SITE  = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://axendora.com'
@@ -85,6 +88,10 @@ function layout(content: string) {
 // ─── Send helper ─────────────────────────────────────────────────────────────
 
 async function send(options: { to: string; subject: string; html: string }) {
+  if (!resend) {
+    console.warn('[email] RESEND_API_KEY no configurada — email omitido:', options.subject)
+    return
+  }
   try {
     const { error } = await resend.emails.send({ from: FROM, ...options })
     if (error) console.error('[email] send error:', error)
