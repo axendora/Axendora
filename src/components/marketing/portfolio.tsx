@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, Instagram, PenTool, Target, Globe, Palette, TrendingUp, type LucideIcon } from 'lucide-react'
+import { ArrowRight, Share2, PenTool, Target, Globe, Palette, TrendingUp, type LucideIcon } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -15,7 +15,7 @@ const proyectos: {
     categoria: 'Redes Sociales',
     titulo: 'Boutique Aurora',
     descripcion: '+800% engagement en 3 meses',
-    icon: Instagram,
+    icon: Share2,
     imagen:
       'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80&auto=format&fit=crop',
     color: 'from-pink-500/40 to-purple-600/40',
