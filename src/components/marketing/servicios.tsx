@@ -21,7 +21,7 @@ const servicios: {
     titulo: 'Gestión de Redes Sociales',
     descripcion:
       'Administramos tu presencia en redes con contenido estratégico y constante alineado con tu marca.',
-    tags: ['Instagram', 'Facebook', 'TikTok'],
+    tags: ['Instagram', 'Facebook', 'WhatsApp'],
     destacado: true,
   },
   {
@@ -85,13 +85,13 @@ export function Servicios() {
               >
                 <div className="relative aspect-[4/3] overflow-hidden lg:aspect-auto lg:h-[280px]">
                   <Image
-                    src="https://images.unsplash.com/photo-1611162616475-46b635cb6868?auto=format&fit=crop&w=800&q=80"
-                    alt="Gestión de redes sociales"
+                    src="/brands/redes.png"
+                    alt="Gestión de redes sociales — Meta, Instagram, Facebook, WhatsApp"
                     fill
                     sizes="(max-width: 1024px) 100vw, 33vw"
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
                   <div className="absolute right-4 top-4 rounded-full bg-primary/90 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground backdrop-blur-sm">
                     Más solicitado
                   </div>
