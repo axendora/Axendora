@@ -109,6 +109,7 @@ export type Database = {
           pais: string | null
           whatsapp: string | null
           notas_internas: string | null
+          avatar_url: string | null
           created_at: string
           updated_at: string
         }
@@ -126,6 +127,7 @@ export type Database = {
           ciudad?: string | null
           pais?: string | null
           notas_internas?: string | null
+          avatar_url?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -141,6 +143,7 @@ export type Database = {
           ciudad?: string | null
           pais?: string | null
           notas_internas?: string | null
+          avatar_url?: string | null
           updated_at?: string
         }
         Relationships: []
