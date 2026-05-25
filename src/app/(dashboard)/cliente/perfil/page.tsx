@@ -10,11 +10,35 @@ export default async function PerfilPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
+  type ProfileData = {
+    nombre: string
+    email: string
+    empresa: string | null
+    whatsapp: string | null
+    avatar_url: string | null
+    created_at: string
+  }
+
+  // Intentar con avatar_url; si migración 019 no se ejecutó, degradar sin ella
+  const res1 = await supabase
     .from('profiles')
     .select('nombre, email, empresa, whatsapp, avatar_url, created_at')
     .eq('user_id', user.id)
     .single()
+
+  let profile: ProfileData | null = null
+  if (!res1.error && res1.data) {
+    profile = res1.data as unknown as ProfileData
+  } else {
+    const res2 = await supabase
+      .from('profiles')
+      .select('nombre, email, empresa, whatsapp, created_at')
+      .eq('user_id', user.id)
+      .single()
+    if (res2.data) {
+      profile = { ...(res2.data as Omit<ProfileData, 'avatar_url'>), avatar_url: null }
+    }
+  }
 
   const nombre    = profile?.nombre    ?? ''
   const empresa   = profile?.empresa   ?? ''
@@ -41,7 +65,6 @@ export default async function PerfilPage() {
           userId={user.id}
           currentUrl={avatarUrl}
           nombre={nombre}
-          onUploaded={() => {}}
         />
         <div className="flex-1 text-center sm:text-left">
           <p className="text-xl font-semibold text-foreground">{nombre || 'Sin nombre'}</p>

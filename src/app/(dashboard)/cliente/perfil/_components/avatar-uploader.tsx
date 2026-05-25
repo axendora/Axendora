@@ -9,13 +9,12 @@ interface Props {
   userId: string
   currentUrl: string | null
   nombre: string
-  onUploaded: (url: string) => void
 }
 
 const ACCEPT = 'image/png,image/jpeg,image/webp'
 const MAX_BYTES = 2 * 1024 * 1024 // 2 MB
 
-export function AvatarUploader({ userId, currentUrl, nombre, onUploaded }: Props) {
+export function AvatarUploader({ userId, currentUrl, nombre }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [preview, setPreview] = useState<string | null>(currentUrl)
   const [loading, setLoading] = useState(false)
@@ -62,7 +61,6 @@ export function AvatarUploader({ userId, currentUrl, nombre, onUploaded }: Props
       if (dbErr) throw dbErr
 
       setPreview(publicUrl)
-      onUploaded(publicUrl)
     } catch {
       setError('No se pudo subir la foto. Intenta nuevamente.')
     } finally {
