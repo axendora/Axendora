@@ -7,6 +7,7 @@ import { Proceso } from '@/components/marketing/proceso'
 import { Portfolio } from '@/components/marketing/portfolio'
 import { Testimonios } from '@/components/marketing/testimonios'
 import { Contacto } from '@/components/marketing/contacto'
+import { DigitalShowcase } from '@/components/marketing/digital-showcase'
 
 export const metadata: Metadata = {
   title: {
@@ -33,6 +34,7 @@ export default function LandingPage() {
       <Portfolio />
       <Testimonios />
       <Contacto />
+      <DigitalShowcase />
     </>
   )
 }
