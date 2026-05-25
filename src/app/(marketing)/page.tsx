@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Hero } from '@/components/marketing/hero'
 import { Stats } from '@/components/marketing/stats'
 import { Servicios } from '@/components/marketing/servicios'
+import { MetaPlataformas } from '@/components/marketing/meta-plataformas'
 import { Proceso } from '@/components/marketing/proceso'
 import { Portfolio } from '@/components/marketing/portfolio'
 import { Testimonios } from '@/components/marketing/testimonios'
@@ -27,6 +28,7 @@ export default function LandingPage() {
       <Hero />
       <Stats />
       <Servicios />
+      <MetaPlataformas />
       <Proceso />
       <Portfolio />
       <Testimonios />
