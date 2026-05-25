@@ -3,11 +3,10 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, DollarSign } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
 import { crearFacturaAction } from '../../actions'
-import type { MonedaTipo } from '@/types/database.types'
 
 type Client = {
   user_id: string
@@ -26,11 +25,6 @@ type Campaign = {
 const INPUT =
   'w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30'
 
-const MONEDAS: { value: MonedaTipo; label: string; symbol: string }[] = [
-  { value: 'USD', label: 'USD — Dólar', symbol: '$' },
-  { value: 'COP', label: 'COP — Peso colombiano', symbol: '$' },
-]
-
 interface Props {
   clients: Client[]
   campaigns: Campaign[]
@@ -44,7 +38,6 @@ export function NuevaFacturaForm({ clients, campaigns }: Props) {
   const [clientId, setClientId]         = useState(clients[0]?.user_id ?? '')
   const [campaignId, setCampaignId]     = useState('')
   const [concepto, setConcepto]         = useState('')
-  const [moneda, setMoneda]             = useState<MonedaTipo>('USD')
   const [monto, setMonto]               = useState('')
   const [vencimiento, setVencimiento]   = useState('')
 
@@ -79,7 +72,7 @@ export function NuevaFacturaForm({ clients, campaigns }: Props) {
   }
 
   const preview = monto && !isNaN(parseFloat(monto))
-    ? `${moneda === 'USD' ? '$ ' : '$ '}${parseFloat(monto).toLocaleString('es-CO')} ${moneda}`
+    ? new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(parseFloat(monto))
     : null
 
   return (
@@ -160,40 +153,23 @@ export function NuevaFacturaForm({ clients, campaigns }: Props) {
             />
           </div>
 
-          {/* Monto + Moneda */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">
-                Monto <span className="text-destructive">*</span>
-              </label>
-              <div className="relative">
-                <DollarSign size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <input
-                  name="monto"
-                  type="number"
-                  min="0.01"
-                  step="0.01"
-                  value={monto}
-                  onChange={(e) => setMonto(e.target.value)}
-                  placeholder="0.00"
-                  className={cn(INPUT, 'pl-8')}
-                  required
-                />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Moneda</label>
-              <select
-                name="moneda"
-                value={moneda}
-                onChange={(e) => setMoneda(e.target.value as MonedaTipo)}
-                className={INPUT}
-              >
-                {MONEDAS.map((m) => (
-                  <option key={m.value} value={m.value}>{m.label}</option>
-                ))}
-              </select>
-            </div>
+          {/* Monto */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">
+              Monto (COP) <span className="text-destructive">*</span>
+            </label>
+            <input
+              name="monto"
+              type="number"
+              min="1"
+              step="1"
+              value={monto}
+              onChange={(e) => setMonto(e.target.value)}
+              placeholder="ej. 500000"
+              className={INPUT}
+              required
+            />
+            <input type="hidden" name="moneda" value="COP" />
           </div>
           {preview && (
             <p className="text-xs text-muted-foreground">

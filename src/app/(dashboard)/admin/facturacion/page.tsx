@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
 import { EstadoFacturaSelect } from './_components/estado-factura-select'
 import { EliminarFacturaBtn } from './_components/eliminar-factura-btn'
-import type { FacturaEstado, MonedaTipo } from '@/types/database.types'
+import type { FacturaEstado } from '@/types/database.types'
 
 type FacturaRow = {
   id: string
@@ -16,7 +16,6 @@ type FacturaRow = {
   numero: string
   concepto: string
   monto: number
-  moneda: MonedaTipo
   estado: FacturaEstado
   fecha_emision: string
   fecha_vencimiento: string | null
@@ -36,11 +35,8 @@ const estadoConfig: Record<FacturaEstado, { label: string; className: string; ic
   cancelada:  { label: 'Cancelada',  className: 'bg-muted text-muted-foreground',               icon: Ban         },
 }
 
-function formatMonto(monto: number, moneda: MonedaTipo) {
-  if (moneda === 'USD') {
-    return `$ ${monto.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`
-  }
-  return `$ ${monto.toLocaleString('es-CO', { maximumFractionDigits: 0 })} COP`
+function formatMonto(monto: number) {
+  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(monto)
 }
 
 function formatDate(date: string | null, tz: string) {
@@ -86,8 +82,7 @@ export default async function AdminFacturacionPage({
   const pagadas     = todas.filter((f) => f.estado === 'pagada')
   const vencidas    = todas.filter((f) => f.estado === 'vencida')
 
-  const cobradoUSD = pagadas.filter((f) => f.moneda === 'USD').reduce((s, f) => s + f.monto, 0)
-  const cobradoCOP = pagadas.filter((f) => f.moneda === 'COP').reduce((s, f) => s + f.monto, 0)
+  const cobradoCOP = pagadas.reduce((s, f) => s + f.monto, 0)
 
   // Filtrado
   const lista =
@@ -129,11 +124,10 @@ export default async function AdminFacturacionPage({
           icon={AlertTriangle}
         />
         <StatCard
-          label="Cobrado USD"
-          value={cobradoUSD > 0 ? `$${cobradoUSD.toLocaleString('en-US', { minimumFractionDigits: 0 })}` : cobradoCOP > 0 ? `$${cobradoCOP.toLocaleString('es-CO', { maximumFractionDigits: 0 })} COP` : '—'}
+          label="Total cobrado"
+          value={cobradoCOP > 0 ? formatMonto(cobradoCOP) : '—'}
           tone="success"
           icon={CheckCircle2}
-          sub={cobradoUSD > 0 && cobradoCOP > 0 ? `+ $${cobradoCOP.toLocaleString('es-CO', { maximumFractionDigits: 0 })} COP` : undefined}
         />
       </div>
 
@@ -204,7 +198,7 @@ export default async function AdminFacturacionPage({
 
                   {/* Monto */}
                   <div className="shrink-0 text-right sm:text-left">
-                    <p className="text-base font-bold">{formatMonto(f.monto, f.moneda)}</p>
+                    <p className="text-base font-bold">{formatMonto(f.monto)}</p>
                     <div className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-muted-foreground sm:flex-col sm:gap-y-0.5">
                       <span className="flex items-center gap-1">
                         <CalendarDays size={10} />
