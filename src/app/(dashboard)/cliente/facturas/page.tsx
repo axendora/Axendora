@@ -13,14 +13,13 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
-import type { FacturaEstado, MonedaTipo } from '@/types/database.types'
+import type { FacturaEstado } from '@/types/database.types'
 
 type FacturaRow = {
   id: string
   numero: string
   concepto: string
   monto: number
-  moneda: MonedaTipo
   estado: FacturaEstado
   fecha_emision: string
   fecha_vencimiento: string | null
@@ -38,11 +37,8 @@ const estadoConfig: Record<
   cancelada: { label: 'Cancelada',         className: 'bg-muted/50 text-muted-foreground border-border',     dot: 'bg-muted-foreground', icon: Ban      },
 }
 
-function formatMonto(monto: number, moneda: MonedaTipo) {
-  if (moneda === 'USD') {
-    return `$ ${monto.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`
-  }
-  return `$ ${monto.toLocaleString('es-CO', { maximumFractionDigits: 0 })} COP`
+function formatMonto(monto: number) {
+  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(monto)
 }
 
 function formatDate(date: string | null) {
@@ -77,7 +73,7 @@ export default async function ClienteFacturasPage({
 
   const { data: raw } = await supabase
     .from('facturas')
-    .select('id, numero, concepto, monto, moneda, estado, fecha_emision, fecha_vencimiento, fecha_pago, notas')
+    .select('id, numero, concepto, monto, estado, fecha_emision, fecha_vencimiento, fecha_pago, notas')
     .eq('client_id', user.id)
     .order('created_at', { ascending: false })
 
@@ -251,7 +247,7 @@ export default async function ClienteFacturasPage({
 
                         {/* Monto */}
                         <div className="shrink-0 text-right">
-                          <p className="text-xl font-bold">{formatMonto(f.monto, f.moneda)}</p>
+                          <p className="text-xl font-bold">{formatMonto(f.monto)}</p>
                         </div>
                       </div>
 

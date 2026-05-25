@@ -8,7 +8,7 @@ import {
 import { cn } from '@/lib/utils'
 import { PeriodoSelector } from './_components/periodo-selector'
 import { PrintButton } from './_components/print-button'
-import type { SolicitudEstado, SolicitudTipo, SolicitudPrioridad, ServiceEstado, FacturaEstado, MonedaTipo } from '@/types/database.types'
+import type { SolicitudEstado, SolicitudTipo, SolicitudPrioridad, ServiceEstado, FacturaEstado } from '@/types/database.types'
 
 // ── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -37,7 +37,6 @@ type FacturaRow = {
   numero: string
   concepto: string
   monto: number
-  moneda: MonedaTipo
   estado: FacturaEstado
   fecha_emision: string
   fecha_vencimiento: string | null
@@ -60,9 +59,8 @@ function formatDate(iso: string | null) {
   return new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(iso))
 }
 
-function formatCurrency(amount: number, moneda: string) {
-  if (moneda === 'COP') return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(amount)
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
+function formatCurrency(amount: number) {
+  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(amount)
 }
 
 // ── Config badges ────────────────────────────────────────────────────────────
@@ -138,7 +136,7 @@ export default async function ReportesPage({
       .order('created_at', { ascending: false }),
     supabase
       .from('facturas')
-      .select('id, numero, concepto, monto, moneda, estado, fecha_emision, fecha_vencimiento, fecha_pago')
+      .select('id, numero, concepto, monto, estado, fecha_emision, fecha_vencimiento, fecha_pago')
       .eq('client_id', user.id)
       .order('fecha_emision', { ascending: false })
       .then((res) => desdeISO
@@ -156,10 +154,7 @@ export default async function ReportesPage({
   // Resumen período
   const resueltas   = solicitudes.filter((s) => ['resuelta', 'aprobada'].includes(s.estado)).length
   const factPagadas = facturas.filter((f) => f.estado === 'pagada')
-  const totalPagado = {
-    usd: factPagadas.filter((f) => f.moneda === 'USD').reduce((s, f) => s + Number(f.monto), 0),
-    cop: factPagadas.filter((f) => f.moneda === 'COP').reduce((s, f) => s + Number(f.monto), 0),
-  }
+  const totalPagadoCOP = factPagadas.reduce((s, f) => s + Number(f.monto), 0)
 
   const periodoLabel: Record<string, string> = {
     '30d': 'últimos 30 días', '3m': 'últimos 3 meses',
@@ -202,10 +197,7 @@ export default async function ReportesPage({
           <ResumenCard label="Facturas emitidas" value={facturas.length} sub={`${factPagadas.length} pagadas`} />
           <ResumenCard
             label="Total pagado"
-            value={[
-              totalPagado.usd > 0 ? formatCurrency(totalPagado.usd, 'USD') : null,
-              totalPagado.cop > 0 ? formatCurrency(totalPagado.cop, 'COP') : null,
-            ].filter(Boolean).join(' · ') || '—'}
+            value={totalPagadoCOP > 0 ? formatCurrency(totalPagadoCOP) : '—'}
             sub="En el período"
             compact
           />
@@ -367,7 +359,7 @@ export default async function ReportesPage({
                       <tr key={f.id} className="bg-card hover:bg-muted/30 transition-colors">
                         <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-muted-foreground">{f.numero}</td>
                         <td className="max-w-[200px] truncate px-4 py-3 text-foreground">{f.concepto}</td>
-                        <td className="whitespace-nowrap px-4 py-3 font-semibold">{formatCurrency(f.monto, f.moneda)}</td>
+                        <td className="whitespace-nowrap px-4 py-3 font-semibold">{formatCurrency(f.monto)}</td>
                         <td className="px-4 py-3">
                           <span className={cn('inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium', est.cls)}>
                             <Icon size={10} />

@@ -16,7 +16,6 @@ type SolicitudRow = {
 
 type FacturaRow = {
   monto: number
-  moneda: string
   estado: string
 }
 
@@ -38,11 +37,8 @@ function kpiClass(color: 'primary' | 'success' | 'warning' | 'error') {
   }[color]
 }
 
-function formatCurrency(amount: number, moneda: string) {
-  if (moneda === 'COP') {
-    return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(amount)
-  }
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
+function formatCOP(amount: number) {
+  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(amount)
 }
 
 function formatDate(iso: string | null) {
@@ -68,7 +64,7 @@ export default async function EstadisticasPage() {
       .order('created_at', { ascending: true }),
     supabase
       .from('facturas')
-      .select('monto, moneda, estado')
+      .select('monto, estado')
       .eq('client_id', user.id),
     supabase
       .from('client_services')
@@ -116,10 +112,8 @@ export default async function EstadisticasPage() {
   const factPend     = facturas.filter((f) => f.estado === 'pendiente')
   const factVencidas = facturas.filter((f) => f.estado === 'vencida')
 
-  const sumUSD = (rows: FacturaRow[]) =>
-    rows.filter((f) => f.moneda === 'USD').reduce((s, f) => s + Number(f.monto), 0)
   const sumCOP = (rows: FacturaRow[]) =>
-    rows.filter((f) => f.moneda === 'COP').reduce((s, f) => s + Number(f.monto), 0)
+    rows.reduce((s, f) => s + Number(f.monto), 0)
 
   // ── Servicios + campañas activos ────────────────────────────────────────────
   const serviciosActivos  = servicios.filter((s) => s.estado === 'activo').length
@@ -243,10 +237,7 @@ export default async function EstadisticasPage() {
               <p className="text-xs text-muted-foreground">Pagado</p>
               <p className="mt-1 text-xl font-bold text-success">{factPagadas.length}</p>
               <p className="mt-0.5 text-xs text-success/70">
-                {sumUSD(factPagadas) > 0 && formatCurrency(sumUSD(factPagadas), 'USD')}
-                {sumUSD(factPagadas) > 0 && sumCOP(factPagadas) > 0 && ' · '}
-                {sumCOP(factPagadas) > 0 && formatCurrency(sumCOP(factPagadas), 'COP')}
-                {factPagadas.length === 0 && '—'}
+                {factPagadas.length > 0 ? formatCOP(sumCOP(factPagadas)) : '—'}
               </p>
             </div>
             {/* Pendientes */}
@@ -254,10 +245,7 @@ export default async function EstadisticasPage() {
               <p className="text-xs text-muted-foreground">Pendiente</p>
               <p className="mt-1 text-xl font-bold text-warning">{factPend.length}</p>
               <p className="mt-0.5 text-xs text-warning/70">
-                {sumUSD(factPend) > 0 && formatCurrency(sumUSD(factPend), 'USD')}
-                {sumUSD(factPend) > 0 && sumCOP(factPend) > 0 && ' · '}
-                {sumCOP(factPend) > 0 && formatCurrency(sumCOP(factPend), 'COP')}
-                {factPend.length === 0 && '—'}
+                {factPend.length > 0 ? formatCOP(sumCOP(factPend)) : '—'}
               </p>
             </div>
             {/* Vencidas */}
@@ -272,10 +260,7 @@ export default async function EstadisticasPage() {
                 {factVencidas.length}
               </p>
               <p className={cn('mt-0.5 text-xs', factVencidas.length > 0 ? 'text-destructive/70' : 'text-muted-foreground')}>
-                {sumUSD(factVencidas) > 0 && formatCurrency(sumUSD(factVencidas), 'USD')}
-                {sumUSD(factVencidas) > 0 && sumCOP(factVencidas) > 0 && ' · '}
-                {sumCOP(factVencidas) > 0 && formatCurrency(sumCOP(factVencidas), 'COP')}
-                {factVencidas.length === 0 && 'Todo al día ✓'}
+                {factVencidas.length > 0 ? formatCOP(sumCOP(factVencidas)) : 'Todo al día ✓'}
               </p>
             </div>
           </div>

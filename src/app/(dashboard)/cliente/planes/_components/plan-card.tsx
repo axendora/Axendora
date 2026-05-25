@@ -6,7 +6,7 @@ import { Star, Loader2, Send, Tag } from 'lucide-react'
 import { Layers } from 'lucide-react'
 import { WhatsAppIcon } from '@/components/icons/whatsapp-icon'
 import { getServiceIcon } from '@/lib/service-icons'
-import { formatUSD, formatCOP, tipoPrecioLabel, buildWhatsAppLink } from '@/lib/plans'
+import { formatCOP, tipoPrecioLabel, buildWhatsAppLink } from '@/lib/plans'
 import { solicitarPlanAction, type SolicitarPlanState } from '../actions'
 import { RequestSuccessModal } from './request-success-modal'
 import { cn } from '@/lib/utils'
@@ -19,7 +19,6 @@ type Plan = {
   nombre: string
   descripcion: string | null
   categoria: PlanCategoria
-  precio_usd: number | null
   precio_cop: number | null
   tipo_precio: TipoPrecio
   imagen_url: string | null
@@ -28,15 +27,6 @@ type Plan = {
 }
 
 // ── Helpers de descuento ──────────────────────────────────────────────────────
-
-function calcUSD(precio: number | null, oferta: OfertaActiva): number | null {
-  if (precio == null) return null
-  if (oferta.tipo_descuento === 'porcentaje') {
-    return Math.round(precio * (1 - oferta.valor_descuento / 100))
-  }
-  if (oferta.moneda === 'USD') return Math.max(0, Math.round((precio - oferta.valor_descuento) * 100) / 100)
-  return precio
-}
 
 function calcCOP(precio: number | null, oferta: OfertaActiva): number | null {
   if (precio == null) return null
@@ -49,8 +39,8 @@ function calcCOP(precio: number | null, oferta: OfertaActiva): number | null {
 
 function badgeLabel(oferta: OfertaActiva): string {
   if (oferta.tipo_descuento === 'porcentaje') return `−${oferta.valor_descuento}%`
-  if (oferta.moneda === 'USD') return `−$${oferta.valor_descuento} USD`
-  return `−$${oferta.valor_descuento.toLocaleString('es-CO', { maximumFractionDigits: 0 })} COP`
+  if (oferta.moneda === 'COP') return `−$${oferta.valor_descuento.toLocaleString('es-CO', { maximumFractionDigits: 0 })} COP`
+  return 'Descuento'
 }
 
 // ── Submit button ─────────────────────────────────────────────────────────────
@@ -80,15 +70,11 @@ export function PlanCard({ plan, oferta, whatsapp, clientName }: PlanCardProps) 
   const [modalOpen, setModalOpen] = useState(false)
 
   const PlanIcon = getServiceIcon(plan.icono)
-  const usd = formatUSD(plan.precio_usd)
   const cop = formatCOP(plan.precio_cop)
 
   // Precios con descuento
-  const usdRawDesc = oferta ? calcUSD(plan.precio_usd, oferta) : plan.precio_usd
   const copRawDesc = oferta ? calcCOP(plan.precio_cop, oferta) : plan.precio_cop
-  const usdDesc    = oferta ? formatUSD(usdRawDesc) : null
   const copDesc    = oferta ? formatCOP(copRawDesc) : null
-  const usdCambio  = oferta !== null && usdRawDesc !== plan.precio_usd
   const copCambio  = oferta !== null && copRawDesc !== plan.precio_cop
 
   const waMsg = `Hola Axendora, me interesa el plan "${plan.nombre}". ¿Me puedes dar más información?`
@@ -167,44 +153,27 @@ export function PlanCard({ plan, oferta, whatsapp, clientName }: PlanCardProps) 
 
           {/* Precio */}
           <div className="mt-4 space-y-1 border-t border-border pt-4">
-            {usd ? (
-              usdCambio ? (
+            {cop ? (
+              copCambio ? (
                 <div className="space-y-0.5">
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl font-bold text-success">{usdDesc}</span>
+                    <span className="text-2xl font-bold text-success">{copDesc}</span>
                     <span className="text-xs text-muted-foreground">
-                      {plan.tipo_precio === 'mensual' ? 'USD / mes' : 'USD único'}
+                      {plan.tipo_precio === 'mensual' ? '/ mes' : 'único'}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground/60 line-through">{usd}</p>
+                  <p className="text-xs text-muted-foreground/60 line-through">{cop}</p>
                 </div>
               ) : (
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl font-bold text-primary">{usd}</span>
+                  <span className="text-2xl font-bold text-primary">{cop}</span>
                   <span className="text-xs text-muted-foreground">
-                    {plan.tipo_precio === 'mensual' ? 'USD / mes' : 'USD único'}
+                    {plan.tipo_precio === 'mensual' ? '/ mes' : 'único'}
                   </span>
                 </div>
               )
             ) : (
               <p className="text-sm font-medium text-muted-foreground">Cotizar</p>
-            )}
-
-            {cop && (
-              copCambio ? (
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground/80">
-                    {copDesc} {plan.tipo_precio === 'mensual' ? '/ mes' : 'único'}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground/40 line-through">
-                    {cop}
-                  </p>
-                </div>
-              ) : (
-                <p className="text-xs text-muted-foreground">
-                  {cop} {plan.tipo_precio === 'mensual' ? '/ mes' : 'único'}
-                </p>
-              )
             )}
 
             {/* Código promo */}
